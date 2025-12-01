@@ -202,16 +202,16 @@
     </style>
 </head>
 <body>
-    <a href="../../index.html" class="back-link">← Back to Tools</a>
+    <a href="../../index.html" class="back-link">&larr; Back to Tools</a>
     
-    <h1>📋 PDF Form Field Checker</h1>
+    <h1>PDF Form Field Checker</h1>
     <p class="description">Compare form fields between a control PDF and review PDFs to identify mismatches</p>
     
     <div class="container">
         <div class="upload-section">
-            <h2>1️⃣ Select Control PDF</h2>
+            <h2>1. Select Control PDF</h2>
             <div class="upload-area" id="control-upload">
-                <p>📄 Click or drag & drop your control PDF here</p>
+                <p><img src="../../assets/icons/file.svg" alt="" style="width: 32px; height: 32px; vertical-align: middle; stroke: #666;"> Click or drag & drop your control PDF here</p>
                 <input type="file" id="control-input" accept=".pdf">
             </div>
             <div id="control-info" class="file-info">
@@ -220,9 +220,9 @@
         </div>
         
         <div class="upload-section">
-            <h2>2️⃣ Select Review PDFs</h2>
+            <h2>2. Select Review PDFs</h2>
             <div class="upload-area" id="review-upload">
-                <p>📄 Click or drag & drop review PDF(s) here</p>
+                <p><img src="../../assets/icons/file.svg" alt="" style="width: 32px; height: 32px; vertical-align: middle; stroke: #666;"> Click or drag & drop review PDF(s) here</p>
                 <p style="color: #888; font-size: 14px;">You can select multiple files</p>
                 <input type="file" id="review-input" accept=".pdf" multiple>
             </div>
@@ -233,8 +233,8 @@
         </div>
         
         <div class="button-group">
-            <button class="btn" id="compare-btn" disabled>🔍 Compare PDFs</button>
-            <button class="btn btn-success" id="download-btn" disabled>⬇️ Download Report</button>
+            <button class="btn" id="compare-btn" disabled><img src="../../assets/icons/search.svg" alt="" style="width: 16px; height: 16px; vertical-align: middle; stroke: white; margin-right: 5px;"> Compare PDFs</button>
+            <button class="btn btn-success" id="download-btn" disabled><img src="../../assets/icons/download.svg" alt="" style="width: 16px; height: 16px; vertical-align: middle; stroke: white; margin-right: 5px;"> Download Report</button>
         </div>
         
         <div class="loading" id="loading">

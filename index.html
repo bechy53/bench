@@ -66,8 +66,10 @@
         }
         
         .tool-icon {
-            font-size: 3em;
+            width: 48px;
+            height: 48px;
             margin-bottom: 15px;
+            stroke: #667eea;
         }
         
         .tool-name {
@@ -165,7 +167,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>🔧 Bench</h1>
+        <h1><img src="assets/icons/wrench.svg" alt="" style="width: 48px; height: 48px; vertical-align: middle; margin-right: 10px; stroke: white;"> Bench</h1>
         <p>A collection of browser-based tools</p>
     </div>
     
@@ -178,14 +180,14 @@
         <div id="tools-grid" class="tools-grid" style="display: none;"></div>
         
         <div id="no-tools" class="no-tools" style="display: none;">
-            <div class="no-tools-icon">📦</div>
+            <div class="no-tools-icon"><img src="assets/icons/package.svg" alt="" style="width: 64px; height: 64px; stroke: #999;"></div>
             <h2>No tools found</h2>
             <p>Add tools to the <code>/tools</code> directory to get started</p>
         </div>
     </div>
     
     <div class="footer">
-        <p>Built with ❤️ | All tools run client-side in your browser</p>
+        <p>Built with <img src="assets/icons/heart.svg" alt="love" style="width: 16px; height: 16px; vertical-align: middle; stroke: white; fill: white;"> | All tools run client-side in your browser</p>
     </div>
     
     <script>
@@ -246,7 +248,7 @@
                     card.href = `tools/${tool.id}/index.html`;
                     
                     card.innerHTML = `
-                        <div class="tool-icon">${tool.icon || '🔧'}</div>
+                        <div class="tool-icon"><img src="${tool.icon || 'assets/icons/wrench.svg'}" alt="" style="width: 48px; height: 48px;"></div>
                         <div class="tool-name">${tool.name}</div>
                         <div class="tool-description">${tool.description}</div>
                         <span class="tool-category">${tool.category || 'Uncategorized'}</span>

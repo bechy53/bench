@@ -174,7 +174,7 @@ function displayResults(results) {
     resultsDiv.innerHTML = '';
     
     // Master summary
-    let html = '<div class="summary-card"><h2>📊 Master Summary</h2>';
+    let html = '<div class="summary-card"><h2>Master Summary</h2>';
     html += '<table><thead><tr><th>Review PDF</th><th>Total Fields</th><th>Matches</th><th>Mismatches</th><th>Match %</th></tr></thead><tbody>';
     
     results.forEach(result => {
@@ -198,9 +198,9 @@ function displayResults(results) {
         html += `<h3>${result.pdfName}</h3>`;
         
         if (isPerfect) {
-            html += '<p style="font-size: 1.3em; margin: 20px 0;"><strong>✓ 100% MATCH</strong></p>';
+            html += '<p style="font-size: 1.3em; margin: 20px 0;"><strong><img src="../../assets/icons/check.svg" alt="" style="width: 20px; height: 20px; vertical-align: middle; stroke: #28a745;"> 100% MATCH</strong></p>';
         } else {
-            html += `<p><strong>❌ ${result.mismatches.length} Mismatch(es) Found</strong></p>`;
+            html += `<p><strong><img src="../../assets/icons/x-circle.svg" alt="" style="width: 20px; height: 20px; vertical-align: middle; stroke: #dc3545;"> ${result.mismatches.length} Mismatch(es) Found</strong></p>`;
             html += '<table><thead><tr><th>Ctrl Pg</th><th>Rev Pg</th><th>Field Name</th><th>Control (Status)</th><th>Review (Status)</th></tr></thead><tbody>';
             
             result.mismatches.forEach(field => {

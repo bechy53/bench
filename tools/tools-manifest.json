@@ -3,7 +3,7 @@
     "id": "file-processor",
     "name": "Python File Processor",
     "description": "Upload and analyze text files using Python in the browser",
-    "icon": "🐍",
+    "icon": "assets/icons/python.svg",
     "category": "File Tools",
     "technologies": [
       "PyScript",
@@ -15,7 +15,7 @@
     "id": "pdf-form-checker",
     "name": "PDF Form Field Checker",
     "description": "Compare PDF form fields between a control PDF and review PDFs to identify mismatches",
-    "icon": "📋",
+    "icon": "assets/icons/clipboard.svg",
     "category": "PDF Tools",
     "technologies": [
       "PyScript",

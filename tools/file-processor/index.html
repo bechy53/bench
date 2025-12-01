@@ -138,14 +138,14 @@
     </style>
 </head>
 <body>
-    <a href="../../index.html" class="back-link">← Back to Tools</a>
+    <a href="../../index.html" class="back-link">&larr; Back to Tools</a>
     
     <div class="container">
-        <h1>🐍 Python File Processor</h1>
+        <h1>Python File Processor</h1>
         <p class="description">Upload a text file and process it with Python running directly in your browser!</p>
         
         <div class="upload-area" id="upload-area">
-            <p>📁 Drag & drop a file here or click to select</p>
+            <p><img src="../../assets/icons/file.svg" alt="" style="width: 32px; height: 32px; vertical-align: middle; stroke: #666;"> Drag & drop a file here or click to select</p>
             <p style="color: #888; font-size: 14px;">Supports text files (.txt, .csv, .json, .py, etc.)</p>
             <input type="file" id="file-input" accept=".txt,.csv,.json,.py,.xml,.html,.md,.js,.css">
         </div>
@@ -156,8 +156,8 @@
         </div>
         
         <div class="button-group">
-            <button class="btn" id="process-btn" disabled>🔄 Process File</button>
-            <button class="btn btn-secondary" id="download-btn" disabled>⬇️ Download Result</button>
+            <button class="btn" id="process-btn" disabled><img src="../../assets/icons/refresh.svg" alt="" style="width: 16px; height: 16px; vertical-align: middle; stroke: white; margin-right: 5px;"> Process File</button>
+            <button class="btn btn-secondary" id="download-btn" disabled><img src="../../assets/icons/download.svg" alt="" style="width: 16px; height: 16px; vertical-align: middle; stroke: white; margin-right: 5px;"> Download Result</button>
         </div>
         
         <div class="loading" id="loading">
