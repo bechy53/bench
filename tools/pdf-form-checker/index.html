@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Form Field Checker</title>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .upload-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .upload-section h2 {
+            margin-top: 0;
+            color: #555;
+            font-size: 1.2em;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            margin-bottom: 15px;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+        }
+        .upload-area.dragover {
+            border-color: #007bff;
+            background-color: #f0f7ff;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-info {
+            display: none;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .file-info.visible {
+            display: block;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+        .button-group {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .loading.visible {
+            display: block;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #results {
+            display: none;
+            margin-top: 30px;
+        }
+        #results.visible {
+            display: block;
+        }
+        .summary-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .summary-card.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .summary-card.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #1F4E78;
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .match {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .mismatch {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .status-filled {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-blank {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-na {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <a href="../../index.html" class="back-link">← Back to Tools</a>
+    
+    <h1>📋 PDF Form Field Checker</h1>
+    <p class="description">Compare form fields between a control PDF and review PDFs to identify mismatches</p>
+    
+    <div class="container">
+        <div class="upload-section">
+            <h2>1️⃣ Select Control PDF</h2>
+            <div class="upload-area" id="control-upload">
+                <p>📄 Click or drag & drop your control PDF here</p>
+                <input type="file" id="control-input" accept=".pdf">
+            </div>
+            <div id="control-info" class="file-info">
+                <strong>Control PDF:</strong> <span id="control-name"></span>
+            </div>
+        </div>
+        
+        <div class="upload-section">
+            <h2>2️⃣ Select Review PDFs</h2>
+            <div class="upload-area" id="review-upload">
+                <p>📄 Click or drag & drop review PDF(s) here</p>
+                <p style="color: #888; font-size: 14px;">You can select multiple files</p>
+                <input type="file" id="review-input" accept=".pdf" multiple>
+            </div>
+            <div id="review-info" class="file-info">
+                <strong>Review PDFs:</strong> <span id="review-count">0</span> file(s) selected
+                <div id="review-list" style="margin-top: 10px;"></div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn" id="compare-btn" disabled>🔍 Compare PDFs</button>
+            <button class="btn btn-success" id="download-btn" disabled>⬇️ Download Report</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>Processing PDFs...</p>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script type="py" src="processor.py" config='{"packages": ["openpyxl"]}'></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
