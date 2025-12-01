@@ -237,8 +237,8 @@
             await new Promise(resolve => setTimeout(resolve, 100));
             
             try {
-                // Call the Python function
-                const result = await window.processFile(fileContent, fileName);
+                // Call the Python function (synchronous in Python)
+                const result = window.processFile(fileContent, fileName);
                 processedContent = result;
                 output.textContent = result;
                 output.classList.add('visible');

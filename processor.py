@@ -73,8 +73,8 @@ def process_file(content: str, filename: str) -> str:
             
             columns = first_line.split(delimiter)
             result.append(f"Columns: {len(columns)}")
-            result.append(f"Data rows: {line_count - 1}")
-            result.append(f"Column headers: {', '.join(columns[:5])}")
+            result.append(f"Total rows: {line_count}")
+            result.append(f"First row values: {', '.join(columns[:5])}")
             if len(columns) > 5:
                 result.append(f"... and {len(columns) - 5} more columns")
     
@@ -83,7 +83,10 @@ def process_file(content: str, filename: str) -> str:
         result.append("🐍 PYTHON CODE ANALYSIS")
         result.append("-" * 50)
         
-        import_count = sum(1 for line in lines if line.strip().startswith('import ') or line.strip().startswith('from '))
+        # Count imports (excluding commented lines)
+        import_count = sum(1 for line in lines 
+                          if not line.strip().startswith('#') and 
+                          (line.strip().startswith('import ') or line.strip().startswith('from ')))
         def_count = sum(1 for line in lines if line.strip().startswith('def '))
         class_count = sum(1 for line in lines if line.strip().startswith('class '))
         comment_count = sum(1 for line in lines if line.strip().startswith('#'))
@@ -98,14 +101,13 @@ def process_file(content: str, filename: str) -> str:
     result.append("📈 TOP 10 MOST COMMON WORDS")
     result.append("-" * 50)
     
-    # Simple word frequency
+    # Simple word frequency using list comprehension
     words = content.lower().split()
-    # Remove punctuation from words
-    cleaned_words = []
-    for word in words:
-        cleaned = ''.join(c for c in word if c.isalnum())
-        if cleaned and len(cleaned) > 2:
-            cleaned_words.append(cleaned)
+    cleaned_words = [
+        ''.join(c for c in word if c.isalnum())
+        for word in words
+    ]
+    cleaned_words = [w for w in cleaned_words if w and len(w) > 2]
     
     word_freq = {}
     for word in cleaned_words:
