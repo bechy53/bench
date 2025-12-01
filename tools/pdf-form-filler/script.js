@@ -112,11 +112,22 @@ async function extractFormFields() {
         
         // Get current value based on field type
         try {
-            if (fieldType === 'PDFTextField') {
-                fieldInfo.value = field.getText() || '';
-                fieldInfo.isMultiline = field.isMultiline();
-            } else if (fieldType === 'PDFCheckBox') {
-                fieldInfo.value = field.isChecked();
+            // Check if it's a text field (type 'r' or 'PDFTextField')
+            if (fieldType === 'PDFTextField' || fieldType === 'r') {
+                if (typeof field.isMultiline === 'function') {
+                    fieldInfo.type = 'PDFTextField';
+                    fieldInfo.value = field.getText() || '';
+                    fieldInfo.isMultiline = field.isMultiline();
+                } else {
+                    // Abbreviated type 'r' - treat as text field
+                    fieldInfo.type = 'PDFTextField';
+                    fieldInfo.value = field.getText ? (field.getText() || '') : '';
+                    fieldInfo.isMultiline = false;
+                }
+            } else if (fieldType === 'PDFCheckBox' || fieldType === 'e') {
+                // Type 'e' is checkbox
+                fieldInfo.type = 'PDFCheckBox';
+                fieldInfo.value = field.isChecked ? field.isChecked() : false;
             } else if (fieldType === 'PDFDropdown') {
                 fieldInfo.value = field.getSelected() || [];
                 fieldInfo.options = field.getOptions();
@@ -126,10 +137,12 @@ async function extractFormFields() {
             } else {
                 console.warn(`Unknown field type: ${fieldType} for field: ${fieldName}`);
                 // Treat unknown types as text fields
+                fieldInfo.type = 'PDFTextField';
                 fieldInfo.value = '';
             }
         } catch (error) {
             console.error(`Error reading field ${fieldName}:`, error);
+            fieldInfo.type = 'PDFTextField';
             fieldInfo.value = '';
         }
         
