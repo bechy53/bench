@@ -8,7 +8,7 @@
     // Detect the current page path to generate correct relative links
     function getBasePath() {
         const path = window.location.pathname;
-        // Check if we're in a tool subdirectory (tools/*/index.html)
+        // Check if we're in a tool subdirectory (tools/*/*.html)
         if (path.includes('/tools/') && path.split('/').length > 3) {
             return '../../';
         }
@@ -59,7 +59,7 @@
         // Generate tools submenu dynamically
         let toolsSubmenuHTML = '';
         tools.forEach(tool => {
-            const toolPath = basePath + 'tools/' + tool.id + '/index.html';
+            const toolPath = basePath + 'tools/' + tool.id + '/' + tool.id + '.html';
             toolsSubmenuHTML += `
                 <a href="${toolPath}" class="sidebar-link sidebar-sublink">
                     <i class="fas fa-file-pdf"></i>
@@ -75,7 +75,7 @@
                 <button class="sidebar-close" aria-label="Close sidebar">×</button>
             </div>
             <nav class="sidebar-nav">
-                <a href="${basePath}index.html" class="sidebar-link">
+                <a href="${basePath}home.html" class="sidebar-link">
                     <i class="fa-solid fa-house sidebar-icon"></i>
                     Home
                 </a>
