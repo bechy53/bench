@@ -1,0 +1,46 @@
+[
+  {
+    "id": "job-book-checker",
+    "name": "Job Book Files Checker",
+    "description": "Check if a job book folder contains all required files and folders",
+    "category": "Utilities",
+    "icon": "📁"
+  },
+  {
+    "id": "pdf-form-checker",
+    "name": "PDF Form Field Checker",
+    "description": "Compare PDF form fields between a control PDF and review PDFs to identify mismatches",
+    "icon": "<i class=\"fa-solid fa-file-pdf\"></i>",
+    "category": "PDF Tools",
+    "technologies": [
+      "PyScript",
+      "Python",
+      "PDF.js"
+    ]
+  },
+  {
+    "id": "pdf-form-filler",
+    "name": "PDF Form Filler",
+    "description": "Upload a PDF form, fill out the fields in your browser, and download the completed PDF",
+    "icon": "<i class=\"fa-solid fa-file-pdf\"></i>",
+    "category": "PDF Tools",
+    "technologies": [
+      "PDF.js",
+      "pdf-lib",
+      "JavaScript"
+    ]
+  },
+  {
+    "id": "run-test-tool",
+    "name": "Run Test Tool",
+    "description": "Find optimal reliability and HOTS test windows from SCADA data. Analyzes WTG availability, power output, and category compliance.",
+    "icon": "<i class=\"fa-solid fa-bolt\"></i>",
+    "category": "Wind Analysis",
+    "technologies": [
+      "Python",
+      "Pyodide",
+      "Pandas",
+      "NumPy"
+    ]
+  }
+]

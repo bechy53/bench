@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run Test Tool | Bench Tools</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../assets/sidebar.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <style>
+        :root {
+            --card-bg: #3a3a3a;
+            --text-color: #e0e0e0;
+            --border-color: #555;
+            --accent-color: #88b0ff;
+            --success-color: #5a9068;
+            --error-color: #dc3545;
+            --warning-color: #f59e0b;
+        }
+        body.light-mode {
+            --card-bg: white;
+            --text-color: #333;
+            --border-color: #ddd;
+            --accent-color: #007bff;
+            --success-color: #1e7e34;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 28px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            transition: background 0.3s ease;
+            color: var(--text-color);
+        }
+        body.light-mode {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 10px 20px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        .theme-toggle:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.05); }
+        body.light-mode .theme-toggle { background: rgba(0, 0, 0, 0.1); border: 2px solid rgba(0, 0, 0, 0.2); }
+        body.light-mode .theme-toggle:hover { background: rgba(0, 0, 0, 0.15); }
+        .theme-toggle-icon { width: 20px; height: 20px; stroke: white; }
+        body.light-mode .theme-toggle-icon { stroke: #2c3e50; }
+        .theme-toggle-text { color: white; font-size: 14px; font-weight: 500; }
+        body.light-mode .theme-toggle-text { color: #2c3e50; }
+
+        .back-link { display: inline-block; margin-bottom: 20px; color: #88b0ff; text-decoration: none; font-size: 14px; }
+        body.light-mode .back-link { color: #007bff; }
+        .back-link:hover { text-decoration: underline; }
+
+        h1 { color: #f0f0f0; text-align: center; margin-bottom: 5px; margin-top: 10px; }
+        body.light-mode h1 { color: #333; }
+        .subtitle { text-align: center; color: #b0b0b0; margin-bottom: 20px; margin-top: 5px; }
+        body.light-mode .subtitle { color: #666; }
+
+        /* Upload cards row */
+        .upload-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        @media (max-width: 768px) { .upload-row { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: background 0.3s ease;
+        }
+        body.light-mode .card { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
+        .card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); }
+        .card-icon { width: 36px; height: 36px; background: #6a6a6a; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: white; }
+        body.light-mode .card-icon { background: #0056b3; }
+        .card-title { font-size: 1.1rem; font-weight: 600; }
+
+        .upload-zone { border: 2px dashed #666; border-radius: 8px; padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.3s ease; background: #2a2a2a; color: #b0b0b0; }
+        body.light-mode .upload-zone { border-color: #ccc; background: #f8f9fa; color: #666; }
+        .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent-color); background: rgba(136, 176, 255, 0.1); }
+        body.light-mode .upload-zone:hover, body.light-mode .upload-zone.drag-over { border-color: #007bff; background: #f0f7ff; }
+        .upload-zone.has-file { border-color: var(--success-color); border-style: solid; }
+        .upload-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.7; }
+        .upload-text { margin-bottom: 0.5rem; }
+        .upload-hint { font-size: 0.85rem; color: #888; }
+        .file-name { color: var(--success-color); font-family: monospace; font-size: 0.9rem; margin-top: 0.75rem; word-break: break-all; }
+        #file-input, #alarm-file-input { display: none; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-color); margin-bottom: 0.5rem; }
+        input[type="number"], input[type="text"], select {
+            width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color); font-family: inherit; font-size: 14px; transition: border-color 0.2s;
+        }
+        body.light-mode input[type="number"], body.light-mode input[type="text"], body.light-mode select { background: white; }
+        input:focus, select:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(136, 176, 255, 0.2); }
+        body.light-mode input:focus, body.light-mode select:focus { box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
+        textarea {
+            width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color); font-family: inherit; font-size: 14px; min-height: 140px;
+        }
+        body.light-mode textarea { background: white; }
+        textarea:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(136, 176, 255, 0.2); }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+            padding: 14px 28px; border: none; border-radius: 6px; font-size: 17px; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        body.light-mode .btn { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15); }
+        .btn-primary { width: 100%; background-color: #6a6a6a; color: white; }
+        body.light-mode .btn-primary { background-color: #0056b3; }
+        .btn-primary:hover:not(:disabled) { background-color: #7a7a7a; transform: translateY(-2px); box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4); }
+        body.light-mode .btn-primary:hover:not(:disabled) { background-color: #004085; box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); }
+        .btn-primary:disabled { background-color: #444; opacity: 0.5; cursor: not-allowed; transform: none; }
+        body.light-mode .btn-primary:disabled { background-color: #ccc; opacity: 1; }
+
+        .status-container { margin-top: 1.5rem; }
+        .status-bar { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: #2a2a2a; border-radius: 6px; font-family: monospace; font-size: 0.85rem; }
+        body.light-mode .status-bar { background: #f8f9fa; }
+        .status-indicator { width: 10px; height: 10px; border-radius: 50%; background: #888; }
+        .status-indicator.loading { background: var(--warning-color); animation: pulse 1.5s infinite; }
+        .status-indicator.success { background: var(--success-color); }
+        .status-indicator.error { background: var(--error-color); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .progress-bar { width: 100%; height: 4px; background: var(--border-color); border-radius: 2px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent-color); border-radius: 2px; transition: width 0.3s ease; }
+
+        .console { background: #2a2a2a; border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem; font-family: monospace; font-size: 0.8rem; max-height: 300px; overflow-y: auto; color: #b0b0b0; }
+        body.light-mode .console { background: #f8f9fa; color: #666; }
+        .console-line { margin-bottom: 0.25rem; }
+        .console-line.info { color: var(--accent-color); }
+        .console-line.success { color: var(--success-color); }
+        .console-line.error { color: var(--error-color); }
+        .console-line.warning { color: var(--warning-color); }
+
+        .results-card { display: none; }
+        .results-card.visible { display: block; }
+        .result-stat { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
+        .result-stat:last-child { border-bottom: none; }
+        .stat-label { color: var(--text-color); }
+        .stat-value { font-family: monospace; font-weight: 600; color: var(--success-color); }
+        .download-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; gap: 1rem; flex-wrap: wrap; }
+        .btn-download { background: linear-gradient(135deg, #28a745, #20853a); }
+        .btn-download:hover { background: linear-gradient(135deg, #34ce57, #28a745); }
+        .btn-view-report { background: linear-gradient(135deg, #6c757d, #5a6268); }
+        .btn-view-report:hover { background: linear-gradient(135deg, #7d868e, #6c757d); }
+        .btn-copy-summary { background: linear-gradient(135deg, #17a2b8, #138496); }
+        .btn-copy-summary:hover { background: linear-gradient(135deg, #1fc8e3, #17a2b8); }
+        .btn-view-charts { background: linear-gradient(135deg, #fd7e14, #e06b0a); }
+        .btn-view-charts:hover { background: linear-gradient(135deg, #ff9234, #fd7e14); }
+        .btn-clear-results { background: linear-gradient(135deg, #dc3545, #c82333); }
+        .btn-clear-results:hover { background: linear-gradient(135deg, #e4606d, #dc3545); }
+
+        .accordion { border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; margin-bottom: 1rem; }
+        .accordion-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #2a2a2a; cursor: pointer; user-select: none; }
+        body.light-mode .accordion-header { background: #f8f9fa; }
+        .accordion-header:hover { background: #3a3a3a; }
+        body.light-mode .accordion-header:hover { background: #e9ecef; }
+        .accordion-title { font-size: 0.9rem; font-weight: 500; }
+        .accordion-icon { transition: transform 0.3s; }
+        .accordion.open .accordion-icon { transform: rotate(180deg); }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .accordion.open .accordion-content { max-height: 1000px; }
+        .accordion-body { padding: 1rem; }
+
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(26, 26, 26, 0.9); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        body.light-mode .loading-overlay { background: rgba(245, 247, 250, 0.9); }
+        .loading-overlay.visible { display: flex; }
+        .loading-content { text-align: center; }
+        .spinner { width: 60px; height: 60px; border: 4px solid #2a2a2a; border-top: 4px solid #888; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem; }
+        body.light-mode .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #007bff; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-size: 1.1rem; color: #b0b0b0; }
+        body.light-mode .loading-text { color: #666; }
+
+        .info-tip { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background: #555; border-radius: 50%; font-size: 0.7rem; color: #b0b0b0; cursor: help; margin-left: 0.25rem; }
+        body.light-mode .info-tip { background: #ccc; color: #666; }
+
+        .preview-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 13px; }
+        .preview-table th, .preview-table td { border: 1px solid var(--border-color); padding: 6px 8px; text-align: right; }
+        .preview-table th { background: rgba(136, 176, 255, 0.1); text-align: left; }
+        body.light-mode .preview-table th { background: #eef5ff; }
+
+        .data-status { color: #888; }
+        .data-status.has-data { color: var(--success-color); }
+        .data-status.has-data::before { content: '✓ '; }
+
+        .data-actions { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+        .btn-preview, .btn-clear { display: inline-flex; align-items: center; gap: 0.4rem; padding: 6px 12px; background: #4a4a4a; color: #e0e0e0; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+        .btn-preview:hover, .btn-clear:hover { background: #5a5a5a; }
+        .btn-preview:disabled, .btn-clear:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-clear { background: #5a3a3a; }
+        .btn-clear:hover { background: #6a4a4a; }
+        body.light-mode .btn-preview, body.light-mode .btn-clear { background: #f0f0f0; color: #333; }
+        body.light-mode .btn-preview:hover, body.light-mode .btn-clear:hover { background: #e0e0e0; }
+        body.light-mode .btn-clear { background: #ffe0e0; }
+        body.light-mode .btn-clear:hover { background: #ffd0d0; }
+
+        .preview-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 2rem; }
+        .preview-modal.visible { display: flex; }
+        body.light-mode .preview-modal { background: rgba(0, 0, 0, 0.5); }
+        .preview-modal-content { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; max-width: 95vw; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); }
+        .preview-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); }
+        .preview-modal-title { font-size: 1.1rem; font-weight: 600; }
+        .preview-modal-close { background: none; border: none; color: var(--text-color); font-size: 1.5rem; cursor: pointer; padding: 0; line-height: 1; opacity: 0.7; }
+        .preview-modal-close:hover { opacity: 1; }
+        .preview-modal-body { overflow: auto; padding: 1rem; max-height: calc(90vh - 60px); }
+        .preview-modal-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace; }
+        .preview-modal-table th, .preview-modal-table td { border: 1px solid var(--border-color); padding: 6px 10px; text-align: left; white-space: nowrap; max-width: 300px; overflow: hidden; text-overflow: ellipsis; }
+        .preview-modal-table th { background: rgba(136, 176, 255, 0.15); position: sticky; top: 0; font-weight: 600; z-index: 10; box-shadow: 0 1px 0 var(--border-color); }
+        body.light-mode .preview-modal-table th { background: #e8f0fe; }
+        .preview-modal-table tr:nth-child(even) { background: rgba(255, 255, 255, 0.03); }
+        body.light-mode .preview-modal-table tr:nth-child(even) { background: rgba(0, 0, 0, 0.02); }
+        .preview-modal-info { padding: 0.75rem 1rem; background: rgba(136, 176, 255, 0.1); border-bottom: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-color); }
+
+        .report-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); display: none; z-index: 3000; padding: 1rem; }
+        .report-modal.visible { display: flex; flex-direction: column; }
+        .report-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--card-bg); border-bottom: 1px solid var(--border-color); border-radius: 10px 10px 0 0; }
+        .report-modal-title { font-size: 1.2rem; font-weight: 600; color: var(--text-color); }
+        .report-modal-close { background: none; border: none; color: var(--text-color); font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
+        .report-modal-close:hover { opacity: 1; }
+        .report-tabs { display: flex; gap: 0; background: var(--card-bg); border-bottom: 1px solid var(--border-color); overflow-x: auto; padding: 0 1rem; }
+        .report-tab { padding: 0.75rem 1.25rem; background: none; border: none; color: var(--text-color); cursor: pointer; font-size: 0.9rem; border-bottom: 2px solid transparent; white-space: nowrap; opacity: 0.7; }
+        .report-tab:hover { opacity: 1; background: rgba(136, 176, 255, 0.1); }
+        .report-tab.active { border-bottom-color: var(--accent-color); opacity: 1; font-weight: 600; }
+        .report-body { flex: 1; overflow: auto; background: var(--card-bg); padding: 1rem; border-radius: 0 0 10px 10px; }
+        .report-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace; }
+        .report-table th, .report-table td { border: 1px solid var(--border-color); padding: 6px 10px; text-align: left; white-space: nowrap; max-width: 400px; overflow: hidden; text-overflow: ellipsis; }
+        .report-table th { background: rgba(136, 176, 255, 0.15); position: sticky; top: 0; font-weight: 600; z-index: 10; }
+        body.light-mode .report-table th { background: #e8f0fe; }
+        .report-table tr:nth-child(even) { background: rgba(255, 255, 255, 0.03); }
+        body.light-mode .report-table tr:nth-child(even) { background: rgba(0, 0, 0, 0.02); }
+
+        .charts-container { display: flex; flex-direction: column; gap: 2rem; padding: 1rem 0; }
+        .chart-wrapper { background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 1rem; }
+        body.light-mode .chart-wrapper { background: rgba(0, 0, 0, 0.03); }
+        .chart-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-color); }
+        .chart-hint { font-size: 0.75rem; color: var(--text-color); opacity: 0.6; margin-bottom: 0.75rem; }
+        .chart-canvas-container { position: relative; height: 400px; }
+        .wtg-chart-selector { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; align-items: center; }
+        .wtg-chart-btn { padding: 0.5rem 1rem; background: rgba(136, 176, 255, 0.2); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color); cursor: pointer; font-size: 0.85rem; }
+        .wtg-chart-btn:hover { background: rgba(136, 176, 255, 0.3); }
+        .wtg-chart-btn.active { background: var(--accent-color); color: #000; font-weight: 600; }
+        .wtg-chart-btn.reset-zoom-btn { background: rgba(253, 126, 20, 0.2); margin-left: auto; }
+        .wtg-chart-btn.reset-zoom-btn:hover { background: rgba(253, 126, 20, 0.4); }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <svg class="theme-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <span class="theme-toggle-text">Theme</span>
+    </button>
+
+    <div class="loading-overlay" id="pyodide-loading">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Loading Python runtime...</div>
+        </div>
+    </div>
+
+    <div class="preview-modal" id="preview-modal">
+        <div class="preview-modal-content">
+            <div class="preview-modal-header">
+                <span class="preview-modal-title" id="preview-modal-title">Data Preview</span>
+                <button class="preview-modal-close" onclick="closePreviewModal()">&times;</button>
+            </div>
+            <div class="preview-modal-info" id="preview-modal-info"></div>
+            <div class="preview-modal-body" id="preview-modal-body"></div>
+        </div>
+    </div>
+
+    <a href="../../index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Tools</a>
+    
+    <h1>Run Test Tool</h1>
+    <p class="subtitle">Find optimal reliability and HOTS test windows from SCADA data</p>
+
+    <!-- Help (Collapsible) -->
+    <div class="accordion" id="help-accordion">
+        <div class="accordion-header" onclick="toggleAccordion('help-accordion')">
+            <span class="accordion-title"><i class="fa-solid fa-circle-question" style="margin-right: 0.5rem;"></i> Quick Help</span>
+            <span class="accordion-icon"><i class="fa-solid fa-chevron-down"></i></span>
+        </div>
+        <div class="accordion-content">
+            <div class="accordion-body" style="font-size: 0.9rem; color: var(--text-color);">
+                <p style="margin-bottom: 1rem;"><strong>Required columns:</strong></p>
+                <ul style="margin-left: 1.25rem; margin-bottom: 1rem;">
+                    <li>Timestamp (PCTimeStamp, etc.)</li>
+                    <li>Power per WTG</li>
+                    <li>Turbine State per WTG</li>
+                    <li>Report Category per WTG</li>
+                </ul>
+                <p style="margin-bottom: 0.5rem;"><strong>M01 Mode:</strong> Finds 72h active windows meeting availability and energy requirements.</p>
+                <p><strong>Reliability Mode:</strong> Informational analysis without strict requirements.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Paste Cards Row -->
+    <div class="upload-row">
+        <div class="card" style="margin-bottom: 0;">
+            <div class="card-header">
+                <div class="card-icon"><i class="fa-solid fa-paste"></i></div>
+                <span class="card-title">SCADA Data Input</span>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Paste SCADA data (tab or comma separated)</label>
+                <textarea id="scada-data-input" placeholder="Paste your SCADA data here...&#10;&#10;Example:&#10;PCTimeStamp&#9;WTG01_Power&#9;WTG01_State&#9;WTG01_ReportCategory&#10;2024-01-01 00:00:00&#9;1500&#9;Running&#9;Normal operation" style="min-height: 200px; font-family: monospace; font-size: 12px;"></textarea>
+                <div class="upload-hint" style="margin-top: 0.5rem;"><i class="fa-solid fa-circle-info"></i> Copy data from VOB and paste directly</div>
+                <div class="data-actions">
+                    <div class="data-status" id="scada-data-status" style="font-size: 0.85rem;"></div>
+                    <button class="btn-preview" id="scada-preview-btn" disabled onclick="showPreview('scada')"><i class="fa-solid fa-table"></i> Preview</button>
+                    <button class="btn-clear" id="scada-clear-btn" onclick="clearDataInput('scada')"><i class="fa-solid fa-xmark"></i> Clear</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 0;">
+            <div class="card-header">
+                <div class="card-icon"><i class="fa-solid fa-bell"></i></div>
+                <span class="card-title">Alarm Log</span>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Paste Alarm Log data (tab or comma separated)</label>
+                <textarea id="alarm-data-input" placeholder="Paste your Alarm Log data here...&#10;&#10;Example:&#10;Timestamp&#9;WTG&#9;EventType&#9;Severity&#9;Description&#10;2024-01-01 00:00:00&#9;WTG01&#9;Alarm&#9;3&#9;High wind shutdown" style="min-height: 200px; font-family: monospace; font-size: 12px;"></textarea>
+                <div class="upload-hint" style="margin-top: 0.5rem;"><i class="fa-solid fa-circle-info"></i> Copy data from VOB and paste directly</div>
+                <div class="data-actions">
+                    <div class="data-status" id="alarm-data-status" style="font-size: 0.85rem;"></div>
+                    <button class="btn-preview" id="alarm-preview-btn" disabled onclick="showPreview('alarm')"><i class="fa-solid fa-table"></i> Preview</button>
+                    <button class="btn-clear" id="alarm-clear-btn" onclick="clearDataInput('alarm')"><i class="fa-solid fa-xmark"></i> Clear</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 0;">
+            <div class="card-header">
+                <div class="card-icon"><i class="fa-solid fa-bolt"></i></div>
+                <span class="card-title">Power Curve</span>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Paste Power Curve table (wind speed rows, air density columns)</label>
+                <textarea id="power-curve-text" placeholder="Paste power curve here...&#10;&#10;Example:&#10;WS [m/s]&#9;1.225&#9;0.950&#9;0.975&#9;1.000&#10;3.0&#9;81&#9;51&#9;54&#9;57&#10;3.5&#9;167&#9;107&#9;113&#9;119" style="min-height: 200px; font-family: monospace; font-size: 12px;"></textarea>
+                <div class="upload-hint" style="margin-top: 0.5rem;"><i class="fa-solid fa-circle-info"></i> First column = wind speed, first row = air density values. Used for expected power calculation.</div>
+                <div class="data-actions">
+                    <div class="data-status" id="power-curve-status" style="font-size: 0.85rem;"></div>
+                    <button class="btn-preview" id="power-curve-preview-btn" disabled onclick="showPreview('powercurve')"><i class="fa-solid fa-table"></i> Preview</button>
+                    <button class="btn-clear" id="power-curve-clear-btn" onclick="clearDataInput('powercurve')"><i class="fa-solid fa-xmark"></i> Clear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon"><i class="fa-solid fa-sliders"></i></div>
+            <span class="card-title">Test Parameters</span>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Mode</label>
+                <select id="mode">
+                    <option value="m01">M01 (72h active)</option>
+                    <option value="reliability">Reliability (informational)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Rated Power (kW)</label>
+                <input type="number" id="rated-power" value="4500" min="100" step="100">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Test Hours</label>
+                <input type="number" id="test-hours" value="72" min="1">
+            </div>
+            <div class="form-group">
+                <label>Extension Hours</label>
+                <input type="number" id="extension-hours" value="24" min="0">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Min Availability %</label>
+                <input type="number" id="min-availability" value="96" min="0" max="100" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Nominal Threshold %</label>
+                <input type="number" id="nominal-threshold" value="99" min="0" max="100" step="1">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Energy Source</label>
+                <select id="energy-source">
+                    <option value="power">Power Average</option>
+                    <option value="total_active">Total Active Power</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Air Density When Missing</label>
+                <select id="air-density-behavior">
+                    <option value="default" selected>Use default automatically</option>
+                    <option value="prompt">Ask to supply column or default</option>
+                    <option value="fail">Fail if missing</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Default Air Density (kg/m³)</label>
+                <input type="number" id="air-density-default" value="1.225" min="0" step="0.001">
+            </div>
+        </div>
+
+        <div class="accordion" id="advanced-accordion">
+            <div class="accordion-header" onclick="toggleAccordion('advanced-accordion')">
+                <span class="accordion-title">Advanced Settings</span>
+                <span class="accordion-icon"><i class="fa-solid fa-chevron-down"></i></span>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <div class="form-group">
+                        <label>Bin Size (minutes) <span class="info-tip" title="Auto-detected if left empty">?</span></label>
+                        <input type="number" id="bin-minutes" placeholder="Auto-detect" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Allowed Categories</label>
+                        <input type="text" id="allowed-categories" value="Normal operation">
+                    </div>
+                    <div class="form-group">
+                        <label>Disallowed Categories</label>
+                        <input type="text" id="disallowed-categories" value="Manufacturer,Unscheduled maintenance">
+                    </div>
+                    <div class="form-group">
+                        <label>Active Base Categories</label>
+                        <input type="text" id="active-base-categories" value="Normal operation">
+                    </div>
+                    <div class="form-group">
+                        <label>Allowed Window Categories</label>
+                        <input type="text" id="allowed-window-categories" value="Normal operation,Scheduled maintenance,Owner,Environmental,Utility">
+                    </div>
+                    <div class="form-group">
+                        <label>Disqualifying Window Categories</label>
+                        <input type="text" id="disqualifying-window-categories" value="Manufacturer,Unscheduled maintenance">
+                    </div>
+                    <div class="form-group">
+                        <label>WTG Separators</label>
+                        <input type="text" id="wtg-separators" value="_, -, space">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion" id="alarm-accordion">
+            <div class="accordion-header" onclick="toggleAccordion('alarm-accordion')">
+                <span class="accordion-title">Alarm Settings</span>
+                <span class="accordion-icon"><i class="fa-solid fa-chevron-down"></i></span>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <div class="form-group">
+                        <label>Keep Event Types <span class="info-tip" title="Comma-separated event types to include">?</span></label>
+                        <input type="text" id="alarms-keep-event-types" value="Alarm,Warning">
+                    </div>
+                    <div class="form-group">
+                        <label>Min Severity <span class="info-tip" title="Leave empty for no filter">?</span></label>
+                        <input type="number" id="alarms-min-severity" placeholder="No filter" min="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" id="run-btn" disabled>
+            <i class="fa-solid fa-play"></i> Run Analysis
+        </button>
+
+        <div class="status-container" id="status-container" style="display: none;">
+            <div class="status-bar">
+                <div class="status-indicator" id="status-indicator"></div>
+                <span id="status-text">Ready</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon"><i class="fa-solid fa-terminal"></i></div>
+            <span class="card-title">Console Output</span>
+        </div>
+        <div class="console" id="console">
+            <div class="console-line info">Initializing Python runtime...</div>
+        </div>
+    </div>
+
+    <div class="card results-card" id="results-card">
+        <div class="card-header">
+            <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <span class="card-title">Results Summary</span>
+        </div>
+        <div id="results-content"></div>
+        <div class="download-section">
+            <button class="btn btn-download" id="download-btn" style="display: none;">
+                <i class="fa-solid fa-download"></i> Download Excel
+            </button>
+            <button class="btn btn-view-report" id="view-report-btn" style="display: none;">
+                <i class="fa-solid fa-table"></i> View Report
+            </button>
+            <button class="btn btn-copy-summary" id="copy-summary-btn" style="display: none;">
+                <i class="fa-solid fa-copy"></i> Copy Summary
+            </button>
+            <button class="btn btn-view-charts" id="view-charts-btn" style="display: none;">
+                <i class="fa-solid fa-chart-line"></i> View Charts
+            </button>
+            <button class="btn btn-clear-results" id="clear-results-btn" style="display: none;">
+                <i class="fa-solid fa-trash"></i> Clear Results
+            </button>
+        </div>
+    </div>
+
+    <!-- Report Viewer Modal -->
+    <div class="report-modal" id="report-modal">
+        <div class="report-modal-header">
+            <span class="report-modal-title"><i class="fa-solid fa-file-excel"></i> Excel Report Viewer</span>
+            <button class="report-modal-close" onclick="closeReportModal()">&times;</button>
+        </div>
+        <div class="report-tabs" id="report-tabs"></div>
+        <div class="report-body" id="report-body"></div>
+    </div>
+
+    <script src="../../assets/sidebar.js"></script>
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+        }
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+    <script>
+        let pyodide = null;
+        let outputBlob = null;
+        let analysisResults = null;  // Stores summaries and chart data from analysis
+
+        // Settings persistence - list of form element IDs to save/load
+        const SETTINGS_KEY = 'runTestToolSettings';
+        const SCADA_DATA_KEY = 'runTestToolScadaData';
+        const ALARM_DATA_KEY = 'runTestToolAlarmData';
+        const SAVED_SETTINGS_IDS = [
+            'mode', 'rated-power', 'test-hours', 'extension-hours',
+            'min-availability', 'nominal-threshold', 'energy-source',
+            'air-density-behavior', 'air-density-default',
+            'bin-minutes', 'allowed-categories', 'disallowed-categories',
+            'active-base-categories', 'allowed-window-categories',
+            'disqualifying-window-categories', 'wtg-separators',
+            'alarms-keep-event-types', 'alarms-min-severity',
+            'power-curve-text'
+        ];
+
+        function saveSettings() {
+            const settings = {};
+            SAVED_SETTINGS_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) settings[id] = el.value;
+            });
+            try {
+                localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+            } catch (e) {
+                console.warn('Could not save settings:', e);
+            }
+        }
+
+        // Debounce timers for large data saves
+        let scadaSaveTimer = null;
+        let alarmSaveTimer = null;
+
+        function saveScadaData() {
+            // Debounce to avoid excessive writes during paste
+            clearTimeout(scadaSaveTimer);
+            scadaSaveTimer = setTimeout(() => {
+                try {
+                    const data = document.getElementById('scada-data-input').value;
+                    if (!data.trim()) {
+                        localStorage.removeItem(SCADA_DATA_KEY);
+                        return;
+                    }
+                    const compressed = LZString.compressToUTF16(data);
+                    localStorage.setItem(SCADA_DATA_KEY, compressed);
+                    console.log(`[Storage] SCADA data saved: ${data.length} chars -> ${compressed.length} compressed (${Math.round(compressed.length/data.length*100)}%)`);
+                } catch (e) {
+                    console.warn('Could not save SCADA data:', e);
+                }
+            }, 500);
+        }
+
+        function saveAlarmData() {
+            // Debounce to avoid excessive writes during paste
+            clearTimeout(alarmSaveTimer);
+            alarmSaveTimer = setTimeout(() => {
+                try {
+                    const data = document.getElementById('alarm-data-input').value;
+                    if (!data.trim()) {
+                        localStorage.removeItem(ALARM_DATA_KEY);
+                        return;
+                    }
+                    const compressed = LZString.compressToUTF16(data);
+                    localStorage.setItem(ALARM_DATA_KEY, compressed);
+                    console.log(`[Storage] Alarm data saved: ${data.length} chars -> ${compressed.length} compressed (${Math.round(compressed.length/data.length*100)}%)`);
+                } catch (e) {
+                    console.warn('Could not save Alarm data:', e);
+                }
+            }, 500);
+        }
+
+        function clearDataInput(type) {
+            if (type === 'scada') {
+                document.getElementById('scada-data-input').value = '';
+                document.getElementById('scada-data-status').textContent = '';
+                document.getElementById('scada-data-status').classList.remove('has-data');
+                localStorage.removeItem(SCADA_DATA_KEY);
+                log('SCADA data cleared', 'info');
+            } else if (type === 'alarm') {
+                document.getElementById('alarm-data-input').value = '';
+                document.getElementById('alarm-data-status').textContent = '';
+                document.getElementById('alarm-data-status').classList.remove('has-data');
+                localStorage.removeItem(ALARM_DATA_KEY);
+                log('Alarm data cleared', 'info');
+            } else if (type === 'powercurve') {
+                document.getElementById('power-curve-text').value = '';
+                document.getElementById('power-curve-status').textContent = '';
+                document.getElementById('power-curve-status').classList.remove('has-data');
+                saveSettings(); // Power curve is in settings
+                log('Power curve cleared', 'info');
+            }
+            checkRunEnabled();
+        }
+
+        function loadSettings() {
+            try {
+                const saved = localStorage.getItem(SETTINGS_KEY);
+                if (saved) {
+                    const settings = JSON.parse(saved);
+                    SAVED_SETTINGS_IDS.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el && settings[id] !== undefined) {
+                            el.value = settings[id];
+                        }
+                    });
+                }
+                // SCADA and Alarm data loaded from localStorage (compressed)
+                const savedScada = localStorage.getItem(SCADA_DATA_KEY);
+                if (savedScada) {
+                    try {
+                        const decompressed = LZString.decompressFromUTF16(savedScada);
+                        if (decompressed) {
+                            document.getElementById('scada-data-input').value = decompressed;
+                            const statusEl = document.getElementById('scada-data-status');
+                            updateDataStatusFromText(document.getElementById('scada-data-input'), statusEl);
+                            console.log(`[Storage] SCADA data loaded: ${decompressed.length} chars`);
+                        }
+                    } catch (e) {
+                        console.warn('Could not decompress SCADA data:', e);
+                    }
+                }
+                const savedAlarm = localStorage.getItem(ALARM_DATA_KEY);
+                if (savedAlarm) {
+                    try {
+                        const decompressed = LZString.decompressFromUTF16(savedAlarm);
+                        if (decompressed) {
+                            document.getElementById('alarm-data-input').value = decompressed;
+                            const statusEl = document.getElementById('alarm-data-status');
+                            updateDataStatusFromText(document.getElementById('alarm-data-input'), statusEl);
+                            console.log(`[Storage] Alarm data loaded: ${decompressed.length} chars`);
+                        }
+                    } catch (e) {
+                        console.warn('Could not decompress Alarm data:', e);
+                    }
+                }
+                // Update status displays for power curve if it was loaded
+                const pcEl = document.getElementById('power-curve-text');
+                const pcStatus = document.getElementById('power-curve-status');
+                if (pcEl && pcEl.value.trim()) {
+                    updateDataStatusFromText(pcEl, pcStatus);
+                }
+                console.log('Settings loaded from localStorage');
+            } catch (e) {
+                console.warn('Could not load settings:', e);
+            }
+        }
+
+        function updateDataStatusFromText(textarea, statusEl) {
+            const text = textarea.value.trim();
+            if (!text) {
+                statusEl.textContent = '';
+                statusEl.classList.remove('has-data');
+                return;
+            }
+            const lines = text.split('\n').filter(l => l.trim());
+            const firstLine = lines[0] || '';
+            const delimiter = firstLine.includes('\t') ? '\t' : ',';
+            const cols = firstLine.split(delimiter).length;
+            statusEl.textContent = `${lines.length} rows, ${cols} columns detected`;
+            statusEl.classList.add('has-data');
+        }
+
+        function attachSettingsListeners() {
+            SAVED_SETTINGS_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('change', saveSettings);
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        el.addEventListener('input', saveSettings);
+                    }
+                }
+            });
+        }
+
+        const scadaDataInput = document.getElementById('scada-data-input');
+        const scadaDataStatus = document.getElementById('scada-data-status');
+        const alarmDataInput = document.getElementById('alarm-data-input');
+        const alarmDataStatus = document.getElementById('alarm-data-status');
+        const powerCurveInput = document.getElementById('power-curve-text');
+        const powerCurveStatus = document.getElementById('power-curve-status');
+        const runBtn = document.getElementById('run-btn');
+        const consoleEl = document.getElementById('console');
+        const statusContainer = document.getElementById('status-container');
+        const statusIndicator = document.getElementById('status-indicator');
+        const statusText = document.getElementById('status-text');
+        const progressFill = document.getElementById('progress-fill');
+        const resultsCard = document.getElementById('results-card');
+        const resultsContent = document.getElementById('results-content');
+        const downloadBtn = document.getElementById('download-btn');
+        const viewReportBtn = document.getElementById('view-report-btn');
+        const copySummaryBtn = document.getElementById('copy-summary-btn');
+        const viewChartsBtn = document.getElementById('view-charts-btn');
+        const clearResultsBtn = document.getElementById('clear-results-btn');
+        const loadingOverlay = document.getElementById('pyodide-loading');
+        const airDensityBehaviorEl = document.getElementById('air-density-behavior');
+        const airDensityDefaultEl = document.getElementById('air-density-default');
+
+        function log(message, type = '') {
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleEl.appendChild(line);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function clearConsole() { consoleEl.innerHTML = ''; }
+
+        function setStatus(text, state = '', progress = null) {
+            statusContainer.style.display = 'block';
+            statusText.textContent = text;
+            statusIndicator.className = `status-indicator ${state}`;
+            if (progress !== null) { progressFill.style.width = `${progress}%`; }
+        }
+
+        function toggleAccordion(id) { document.getElementById(id).classList.toggle('open'); }
+
+        function updateDataStatus(textarea, statusEl, label) {
+            const text = textarea.value.trim();
+            if (!text) {
+                statusEl.textContent = '';
+                statusEl.classList.remove('has-data');
+                return { hasData: false, rows: 0, cols: 0 };
+            }
+            const lines = text.split('\n').filter(l => l.trim());
+            const firstLine = lines[0] || '';
+            const delimiter = firstLine.includes('\t') ? '\t' : ',';
+            const cols = firstLine.split(delimiter).length;
+            statusEl.textContent = `${lines.length} rows, ${cols} columns detected`;
+            statusEl.classList.add('has-data');
+            return { hasData: true, rows: lines.length, cols: cols };
+        }
+
+        function checkRunEnabled() {
+            const scadaHasData = scadaDataInput.value.trim().length > 0;
+            runBtn.disabled = !(pyodide && scadaHasData);
+            // Also enable/disable preview buttons
+            document.getElementById('scada-preview-btn').disabled = !scadaHasData;
+            document.getElementById('alarm-preview-btn').disabled = !alarmDataInput.value.trim();
+            document.getElementById('power-curve-preview-btn').disabled = !powerCurveInput.value.trim();
+        }
+
+        scadaDataInput.addEventListener('input', () => {
+            const result = updateDataStatus(scadaDataInput, scadaDataStatus, 'SCADA');
+            if (result.hasData) {
+                log(`SCADA data pasted: ${result.rows} rows, ${result.cols} columns`, 'success');
+            }
+            saveScadaData();
+            checkRunEnabled();
+        });
+
+        alarmDataInput.addEventListener('input', () => {
+            const result = updateDataStatus(alarmDataInput, alarmDataStatus, 'Alarm');
+            if (result.hasData) {
+                log(`Alarm data pasted: ${result.rows} rows, ${result.cols} columns`, 'success');
+            }
+            saveAlarmData();
+            checkRunEnabled();
+        });
+
+        powerCurveInput.addEventListener('input', () => {
+            const result = updateDataStatus(powerCurveInput, powerCurveStatus, 'Power Curve');
+            if (result.hasData) {
+                log(`Power curve pasted: ${result.rows} rows, ${result.cols} columns`, 'success');
+            }
+            checkRunEnabled();
+            saveSettings();
+        });
+
+        function parseTextToTable(text) {
+            const lines = text.split('\n').filter(l => l.trim());
+            if (lines.length === 0) return { headers: [], rows: [] };
+            const firstLine = lines[0];
+            const delimiter = firstLine.includes('\t') ? '\t' : ',';
+            const headers = firstLine.split(delimiter).map(h => h.trim());
+            const rows = lines.slice(1).map(line => line.split(delimiter).map(cell => cell.trim()));
+            return { headers, rows, delimiter: delimiter === '\t' ? 'Tab' : 'Comma' };
+        }
+
+        function showPreview(type) {
+            let textarea, title;
+            if (type === 'scada') {
+                textarea = scadaDataInput;
+                title = 'SCADA Data Preview';
+            } else if (type === 'alarm') {
+                textarea = alarmDataInput;
+                title = 'Alarm Log Preview';
+            } else if (type === 'powercurve') {
+                textarea = powerCurveInput;
+                title = 'Power Curve Preview';
+            }
+            const text = textarea.value.trim();
+            if (!text) return;
+
+            const { headers, rows, delimiter } = parseTextToTable(text);
+            const modal = document.getElementById('preview-modal');
+            const modalTitle = document.getElementById('preview-modal-title');
+            const modalInfo = document.getElementById('preview-modal-info');
+            const modalBody = document.getElementById('preview-modal-body');
+
+            modalTitle.textContent = title;
+            modalInfo.innerHTML = `<strong>${rows.length + 1}</strong> rows &bull; <strong>${headers.length}</strong> columns &bull; ${delimiter}-separated`;
+
+            // Build table HTML
+            let tableHtml = '<table class="preview-modal-table"><thead><tr>';
+            headers.forEach(h => {
+                tableHtml += `<th>${escapeHtml(h)}</th>`;
+            });
+            tableHtml += '</tr></thead><tbody>';
+
+            // Show up to 100 rows for performance
+            const maxRows = Math.min(rows.length, 100);
+            for (let i = 0; i < maxRows; i++) {
+                tableHtml += '<tr>';
+                const row = rows[i];
+                for (let j = 0; j < headers.length; j++) {
+                    const cell = row[j] !== undefined ? row[j] : '';
+                    tableHtml += `<td title="${escapeHtml(cell)}">${escapeHtml(cell)}</td>`;
+                }
+                tableHtml += '</tr>';
+            }
+            tableHtml += '</tbody></table>';
+
+            if (rows.length > 100) {
+                tableHtml += `<p style="margin-top: 1rem; color: var(--warning-color); font-size: 0.85rem;"><i class="fa-solid fa-circle-exclamation"></i> Showing first 100 of ${rows.length} data rows</p>`;
+            }
+
+            modalBody.innerHTML = tableHtml;
+            modal.classList.add('visible');
+        }
+
+        function closePreviewModal() {
+            document.getElementById('preview-modal').classList.remove('visible');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Close modal on escape key or clicking outside
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closePreviewModal();
+                closeReportModal();
+            }
+        });
+        document.getElementById('preview-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'preview-modal') closePreviewModal();
+        });
+        document.getElementById('report-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'report-modal') closeReportModal();
+        });
+
+        async function initPyodide() {
+            loadingOverlay.classList.add('visible');
+            log('Loading Pyodide runtime...', 'info');
+            try {
+                pyodide = await loadPyodide();
+                log('Pyodide loaded. Installing packages...', 'info');
+                await pyodide.loadPackage(['pandas', 'numpy', 'micropip']);
+                log('Core packages installed: pandas, numpy', 'success');
+                log('Installing openpyxl via micropip...', 'info');
+                await pyodide.runPythonAsync(`
+                    import micropip
+                    await micropip.install('openpyxl')
+                `);
+                log('Packages installed: pandas, numpy, openpyxl', 'success');
+                await loadReliabilityScript();
+                loadingOverlay.classList.remove('visible');
+                log('Python runtime ready!', 'success');
+                checkRunEnabled();
+            } catch (error) {
+                loadingOverlay.classList.remove('visible');
+                log(`Failed to initialize Pyodide: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadReliabilityScript() {
+            try {
+                const response = await fetch('reliability_test.py');
+                if (!response.ok) { throw new Error(`Failed to fetch script: ${response.status} ${response.statusText}`); }
+                const code = await response.text();
+                log('Loading Python script (' + code.length + ' chars)...', 'info');
+                try { await pyodide.runPythonAsync(code); }
+                catch (pythonError) { log(`Python execution error: ${pythonError.message}`, 'error'); console.error('Python error details:', pythonError); return; }
+                const check = await pyodide.runPythonAsync(`'run_browser_analysis' in dir()`);
+                if (check) { log('Reliability test module loaded', 'success'); }
+                else {
+                    log('Warning: run_browser_analysis not found in module', 'warning');
+                    const funcs = await pyodide.runPythonAsync(`[x for x in dir() if not x.startswith('_')]`);
+                    log('Defined names: ' + funcs.toJs().join(', '), 'info');
+                }
+            } catch (error) {
+                log(`Failed to load Python script: ${error.message}`, 'error');
+                console.error('Script load error:', error);
+            }
+        }
+
+        runBtn.addEventListener('click', () => runAnalysis());
+
+        async function runAnalysis(overrides = {}, allowRetry = true) {
+            const scadaData = scadaDataInput.value.trim();
+            const alarmData = alarmDataInput.value.trim();
+            console.log('[RunTest] Starting analysis...');
+            console.log('[RunTest] SCADA data length:', scadaData.length, 'chars');
+            console.log('[RunTest] Alarm data length:', alarmData.length, 'chars');
+            if (!pyodide || !scadaData) {
+                console.log('[RunTest] Aborted: pyodide ready =', !!pyodide, ', has SCADA =', !!scadaData);
+                return;
+            }
+            if (!alarmData) {
+                console.log('[RunTest] Aborted: Alarm Log data is required');
+                log('Please paste Alarm Log data before running analysis', 'error');
+                return;
+            }
+            log('Starting analysis...', 'info');
+            console.log('[RunTest] Validation passed, processing data...');
+            setStatus('Processing pasted data...', 'loading', 10);
+            runBtn.disabled = true;
+            resultsCard.classList.remove('visible');
+            downloadBtn.style.display = 'none';
+            viewReportBtn.style.display = 'none';
+            copySummaryBtn.style.display = 'none';
+            viewChartsBtn.style.display = 'none';
+            clearResultsBtn.style.display = 'none';
+            
+            // Clear previous results to free memory
+            analysisResults = null;
+            outputBlob = null;
+            
+            try {
+                // Clear Python cache before new analysis
+                console.log('[RunTest] Clearing previous analysis cache...');
+                await pyodide.runPythonAsync('clear_analysis_cache()');
+                
+                // Pass pasted data as string instead of file bytes
+                console.log('[RunTest] Setting SCADA data in Pyodide...');
+                pyodide.globals.set('input_data_text', scadaData);
+                pyodide.globals.set('input_file_name', 'pasted_data.csv');
+                console.log('[RunTest] Setting Alarm data in Pyodide...');
+                pyodide.globals.set('alarm_data_text', alarmData);
+                pyodide.globals.set('alarm_file_name', 'pasted_alarms.csv');
+                log('Alarm data included', 'info');
+                console.log('[RunTest] Both datasets loaded into Pyodide');
+                const minSeverityVal = document.getElementById('alarms-min-severity').value;
+                const nominalThreshold = parseFloat(document.getElementById('nominal-threshold').value);
+                const params = {
+                    mode: document.getElementById('mode').value,
+                    rated_power_kw: parseFloat(document.getElementById('rated-power').value),
+                    test_hours: parseInt(document.getElementById('test-hours').value),
+                    extension_hours: parseInt(document.getElementById('extension-hours').value),
+                    min_availability_pct: parseFloat(document.getElementById('min-availability').value),
+                    nominal_threshold_pct: nominalThreshold,
+                    bin_minutes: document.getElementById('bin-minutes').value || null,
+                    energy_source: document.getElementById('energy-source').value,
+                    allowed_categories: document.getElementById('allowed-categories').value,
+                    disallowed_categories: document.getElementById('disallowed-categories').value,
+                    active_base_categories: document.getElementById('active-base-categories').value,
+                    allowed_window_categories: document.getElementById('allowed-window-categories').value,
+                    disqualifying_window_categories: document.getElementById('disqualifying-window-categories').value,
+                    wtg_separators: document.getElementById('wtg-separators').value,
+                    alarms_keep_event_types: document.getElementById('alarms-keep-event-types').value,
+                    alarms_min_severity: minSeverityVal ? parseInt(minSeverityVal) : null,
+                    power_curve_text: powerCurveInput.value.trim() || null,
+                    // Hardcoded column patterns - will search for columns containing these strings
+                    air_density_column_hint: 'Ambient Airdensity AirDensityAvg',
+                    wind_speed_column_hint: 'Ambient WindSpeed Avg',
+                    // PR threshold derived from nominal threshold (e.g., 99% -> 0.99)
+                    pr_threshold: nominalThreshold / 100.0,
+                    air_density_behavior: airDensityBehaviorEl.value,
+                    air_density_default: parseFloat(airDensityDefaultEl.value) || 1.225
+                };
+                Object.assign(params, overrides);
+                pyodide.globals.set('params', pyodide.toPy(params));
+                setStatus('Processing SCADA data...', 'loading', 30);
+                log('Parameters set, running analysis...', 'info');
+                const result = await pyodide.runPythonAsync(`
+import json
+alarm_text = alarm_data_text if alarm_data_text is not None else None
+alarm_name = alarm_file_name if alarm_file_name is not None else None
+run_browser_analysis_from_text(input_data_text, input_file_name, params, alarm_text, alarm_name)
+                `);
+                const resultObj = JSON.parse(result);
+                if (resultObj.success) {
+                    setStatus('Analysis complete!', 'success', 100);
+                    let msg = `Found ${resultObj.wtg_count} WTGs, ${resultObj.windows_found} windows`;
+                    if (resultObj.alarms_processed) { msg += `, ${resultObj.alarm_events_total} alarm events`; }
+                    log(msg, 'success');
+                    displayResults(resultObj);
+                    
+                    // Store analysis results for View Report and Charts (no Excel blob yet)
+                    analysisResults = resultObj;
+                    outputBlob = null;
+                    downloadBtn.style.display = 'block';
+                    viewReportBtn.style.display = 'block';
+                    copySummaryBtn.style.display = 'block';
+                    viewChartsBtn.style.display = 'block';
+                    clearResultsBtn.style.display = 'block';
+                    log('Results ready - click Download Excel to generate file', 'success');
+                } else {
+                    if (resultObj.need_air_density_choice && allowRetry) {
+                        const defaultVal = params.air_density_default || 1.225;
+                        const promptMsg = resultObj.message || `Air density column missing. Use default ${defaultVal}?`;
+                        const useDefault = window.confirm(`${promptMsg}\n\nOK = use default ${defaultVal}.\nCancel = supply column name.`);
+                        if (useDefault) {
+                            log('User chose default air density fallback.', 'warning');
+                            return await runAnalysis({ air_density_behavior: 'default' }, false);
+                        }
+                        const colName = window.prompt('Supply air density column name (include WTG prefix if needed):');
+                        if (colName && colName.trim()) {
+                            log(`User supplied air density column: ${colName.trim()}`, 'info');
+                            return await runAnalysis({ air_density_column_hint: colName.trim(), air_density_behavior: 'prompt' }, false);
+                        }
+                        setStatus('Analysis failed', 'error', 100);
+                        log(promptMsg, 'error');
+                    } else {
+                        setStatus('Analysis failed', 'error', 100);
+                        log(`Error: ${resultObj.error || resultObj.message}`, 'error');
+                    }
+                }
+            } catch (error) {
+                setStatus('Analysis failed', 'error', 100);
+                log(`Error: ${error.message}`, 'error');
+                console.error(error);
+            } finally {
+                runBtn.disabled = false;
+            }
+        }
+
+        function displayResults(result) {
+            resultsContent.innerHTML = '';
+            const stats = [
+                ['WTGs Detected', result.wtg_count],
+                ['Windows Found', result.windows_found],
+                ['Bin Size', `${result.bin_minutes} min`],
+                ['Processing Time', `${result.processing_time}s`]
+            ];
+            if (result.alarms_processed) { stats.push(['Alarm Events', result.alarm_events_total]); }
+            stats.forEach(([label, value]) => {
+                const stat = document.createElement('div');
+                stat.className = 'result-stat';
+                stat.innerHTML = `<span class="stat-label">${label}</span><span class="stat-value">${value}</span>`;
+                resultsContent.appendChild(stat);
+            });
+            resultsCard.classList.add('visible');
+        }
+
+        downloadBtn.addEventListener('click', async () => {
+            if (!analysisResults && !outputBlob) return;
+            
+            // Generate Excel on-demand if not already generated
+            if (!outputBlob) {
+                log('Generating Excel file...', 'info');
+                downloadBtn.disabled = true;
+                try {
+                    const genResult = await pyodide.runPythonAsync('generate_excel_on_demand()');
+                    const genObj = JSON.parse(genResult);
+                    if (genObj.success) {
+                        const outputBytes = pyodide.globals.get('output_excel_bytes');
+                        if (outputBytes) {
+                            outputBlob = new Blob([outputBytes.toJs()], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                            log(`Excel generated: ${Math.round(genObj.size_bytes / 1024)} KB`, 'success');
+                        }
+                    } else {
+                        log('Error generating Excel: ' + genObj.error, 'error');
+                        downloadBtn.disabled = false;
+                        return;
+                    }
+                } catch (e) {
+                    log('Error generating Excel: ' + e.message, 'error');
+                    downloadBtn.disabled = false;
+                    return;
+                }
+                downloadBtn.disabled = false;
+            }
+            
+            const url = URL.createObjectURL(outputBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Run_Test_Windows.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            log('Downloaded: Run_Test_Windows.xlsx', 'success');
+        });
+
+        viewReportBtn.addEventListener('click', () => {
+            if (!analysisResults) return;
+            showReportModal();
+        });
+
+        copySummaryBtn.addEventListener('click', async () => {
+            if (!analysisResults || !analysisResults.summaries) {
+                log('No summary data to copy', 'warning');
+                return;
+            }
+            
+            const summaries = analysisResults.summaries;
+            if (summaries.length === 0) {
+                log('No results to copy', 'warning');
+                return;
+            }
+            
+            // Get column headers from first summary
+            const headers = Object.keys(summaries[0]);
+            
+            // Build TSV string (tab-separated for easy paste into Excel)
+            let tsv = headers.join('\t') + '\n';
+            summaries.forEach(row => {
+                const values = headers.map(h => {
+                    const v = row[h];
+                    if (v === null || v === undefined) return '';
+                    return String(v).replace(/\t/g, ' ').replace(/\n/g, ' ');
+                });
+                tsv += values.join('\t') + '\n';
+            });
+            
+            try {
+                await navigator.clipboard.writeText(tsv);
+                // Brief visual feedback
+                const originalText = copySummaryBtn.innerHTML;
+                copySummaryBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+                copySummaryBtn.style.background = 'var(--success-color)';
+                setTimeout(() => {
+                    copySummaryBtn.innerHTML = originalText;
+                    copySummaryBtn.style.background = '';
+                }, 1500);
+                log('Summary copied to clipboard (TSV format - paste into Excel)', 'success');
+            } catch (err) {
+                log('Failed to copy: ' + err.message, 'error');
+            }
+        });
+
+        viewChartsBtn.addEventListener('click', () => {
+            if (!analysisResults) return;
+            showReportModal();
+            showChartsView();
+        });
+
+        clearResultsBtn.addEventListener('click', async () => {
+            // Clear JS-side data
+            analysisResults = null;
+            outputBlob = null;
+            
+            // Clear Python-side cached data
+            if (pyodide) {
+                try {
+                    await pyodide.runPythonAsync('clear_analysis_cache()');
+                } catch (e) {
+                    console.warn('Could not clear Python cache:', e);
+                }
+            }
+            
+            // Hide buttons and results
+            downloadBtn.style.display = 'none';
+            viewReportBtn.style.display = 'none';
+            copySummaryBtn.style.display = 'none';
+            viewChartsBtn.style.display = 'none';
+            clearResultsBtn.style.display = 'none';
+            resultsCard.classList.remove('visible');
+            
+            log('Results cleared, memory freed', 'info');
+        });
+
+        function showReportModal() {
+            if (!analysisResults) return;
+            const modal = document.getElementById('report-modal');
+            const tabsContainer = document.getElementById('report-tabs');
+            const bodyContainer = document.getElementById('report-body');
+            
+            // Build tabs - Summary and Charts only (no Excel workbook sheets)
+            tabsContainer.innerHTML = '';
+            
+            // Add Summary tab
+            const summaryTab = document.createElement('button');
+            summaryTab.className = 'report-tab active';
+            summaryTab.textContent = 'Summary';
+            summaryTab.onclick = () => showSummaryView();
+            tabsContainer.appendChild(summaryTab);
+            
+            // Add Charts tab
+            const chartsTab = document.createElement('button');
+            chartsTab.className = 'report-tab';
+            chartsTab.textContent = 'Charts';
+            chartsTab.onclick = () => showChartsView();
+            tabsContainer.appendChild(chartsTab);
+            
+            // Show summary by default
+            showSummaryView();
+            
+            modal.classList.add('visible');
+        }
+
+        function showSummaryView() {
+            const bodyContainer = document.getElementById('report-body');
+            const tabsContainer = document.getElementById('report-tabs');
+            
+            // Update active tab
+            Array.from(tabsContainer.children).forEach(tab => {
+                tab.classList.toggle('active', tab.textContent === 'Summary');
+            });
+            
+            // Destroy any existing charts
+            if (window.activeCharts) {
+                window.activeCharts.forEach(c => c.destroy());
+                window.activeCharts = [];
+            }
+            
+            const summaries = analysisResults.summaries || [];
+            
+            if (summaries.length === 0) {
+                bodyContainer.innerHTML = '<p style="color: var(--text-color); padding: 1rem;">No results found.</p>';
+                return;
+            }
+            
+            // Get all unique keys from summaries
+            const allKeys = new Set();
+            summaries.forEach(s => Object.keys(s).forEach(k => allKeys.add(k)));
+            const headers = Array.from(allKeys);
+            
+            let html = '<table class="report-table"><thead><tr>';
+            headers.forEach(h => {
+                html += `<th title="${escapeHtml(String(h))}">${escapeHtml(String(h))}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            summaries.forEach(s => {
+                html += '<tr>';
+                headers.forEach(h => {
+                    const val = s[h] !== undefined && s[h] !== null ? s[h] : '';
+                    html += `<td title="${escapeHtml(String(val))}">${escapeHtml(String(val))}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            
+            bodyContainer.innerHTML = html;
+        }
+
+        function closeReportModal() {
+            // Destroy charts when closing
+            if (window.activeCharts) {
+                window.activeCharts.forEach(c => c.destroy());
+                window.activeCharts = [];
+            }
+            document.getElementById('report-modal').classList.remove('visible');
+        }
+
+        window.activeCharts = [];
+        let currentChartWTG = null;
+
+        function showChartsView() {
+            const bodyContainer = document.getElementById('report-body');
+            const tabsContainer = document.getElementById('report-tabs');
+            
+            // Update active tab
+            Array.from(tabsContainer.children).forEach(tab => {
+                tab.classList.toggle('active', tab.textContent === 'Charts');
+            });
+            
+            // Destroy existing charts
+            if (window.activeCharts) {
+                window.activeCharts.forEach(c => c.destroy());
+                window.activeCharts = [];
+            }
+            
+            // Find WTG data from chart_data (keys ending with _Data)
+            const chartData = analysisResults.chart_data || {};
+            const dataSheets = Object.keys(chartData).filter(n => n.endsWith('_Data'));
+            
+            if (dataSheets.length === 0) {
+                bodyContainer.innerHTML = '<p style="color: var(--text-color); padding: 1rem;">No WTG chart data found. Run analysis first.</p>';
+                return;
+            }
+            
+            // Build UI with WTG selector buttons - don't mark any as active initially
+            let html = '<div class="wtg-chart-selector" id="wtg-chart-selector">';
+            dataSheets.forEach((name, idx) => {
+                const wtgName = name.replace('_Data', '');
+                html += `<button class="wtg-chart-btn" data-sheet="${name}" onclick="renderWTGChart('${name}')">${wtgName}</button>`;
+            });
+            html += '<button class="wtg-chart-btn reset-zoom-btn" onclick="resetChartZoom()" title="Reset Zoom"><i class="fa-solid fa-arrows-to-dot"></i> Reset Zoom</button>';
+            html += '</div>';
+            html += '<div class="chart-wrapper"><div class="chart-title" id="chart-title">Select a WTG to view chart</div><div class="chart-hint">Scroll to zoom dates • Drag to pan • Shift + drag to select area</div><div class="chart-canvas-container"><canvas id="power-chart"></canvas></div></div>';
+            
+            bodyContainer.innerHTML = html;
+            
+            // Don't auto-render - wait for user to click a WTG button
+        }
+
+        function renderWTGChart(sheetName) {
+            const wtgName = sheetName.replace('_Data', '');
+            currentChartWTG = sheetName;
+            
+            // Update button states
+            document.querySelectorAll('.wtg-chart-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.sheet === sheetName);
+            });
+            
+            // Destroy existing chart
+            if (window.activeCharts) {
+                window.activeCharts.forEach(c => c.destroy());
+                window.activeCharts = [];
+            }
+            
+            document.getElementById('chart-title').textContent = `${wtgName} - Expected Power vs Actual Power`;
+            
+            // Get chart data from analysisResults
+            const chartDataObj = analysisResults.chart_data[sheetName];
+            if (!chartDataObj || !chartDataObj.rows || chartDataObj.rows.length < 1) {
+                document.getElementById('chart-title').textContent = `${wtgName} - No data available`;
+                return;
+            }
+            
+            const headers = chartDataObj.columns;
+            const data = chartDataObj.rows;
+            
+            const tsIdx = headers.findIndex(h => String(h).toLowerCase().includes('timestamp') || String(h).toLowerCase() === 'pctimestamp');
+            const powerIdx = headers.findIndex(h => String(h).toLowerCase().includes('power avg') || String(h).toLowerCase().includes('production power'));
+            const expectedIdx = headers.findIndex(h => String(h).toLowerCase().includes('expectedpower') || String(h) === '_ExpectedPower');
+            const inWindowIdx = headers.findIndex(h => String(h) === '_InWindow');
+            
+            if (tsIdx === -1 || powerIdx === -1) {
+                document.getElementById('chart-title').textContent = `${wtgName} - Could not find required columns`;
+                return;
+            }
+            
+            const labels = [];
+            const actualPower = [];
+            const expectedPower = [];
+            const inWindow = [];
+            let windowStart = -1;
+            let windowEnd = -1;
+            
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
+                let ts = row[tsIdx];
+                
+                // Format timestamp for display
+                if (ts) {
+                    ts = String(ts).substring(0, 16);
+                }
+                
+                labels.push(ts || '');
+                actualPower.push(parseFloat(row[powerIdx]) || null);
+                if (expectedIdx !== -1) {
+                    expectedPower.push(parseFloat(row[expectedIdx]) || null);
+                }
+                
+                // Track window boundaries
+                if (inWindowIdx !== -1) {
+                    const isIn = row[inWindowIdx] === true || row[inWindowIdx] === 'True' || row[inWindowIdx] === 'TRUE' || row[inWindowIdx] === 1;
+                    inWindow.push(isIn);
+                    if (isIn && windowStart === -1) windowStart = i;
+                    if (isIn) windowEnd = i;
+                }
+            }
+            
+            const ctx = document.getElementById('power-chart').getContext('2d');
+            const isDark = !document.body.classList.contains('light-mode');
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            const textColor = isDark ? '#e0e0e0' : '#333';
+            
+            const datasets = [
+                {
+                    label: 'Actual Power (kW)',
+                    data: actualPower,
+                    backgroundColor: 'rgba(76, 175, 80, 0.7)',
+                    borderColor: '#4CAF50',
+                    borderWidth: 1,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                }
+            ];
+            
+            if (expectedPower.length > 0 && expectedIdx !== -1) {
+                datasets.push({
+                    label: 'Expected Power (kW)',
+                    data: expectedPower,
+                    backgroundColor: 'rgba(255, 152, 0, 0.7)',
+                    borderColor: '#FF9800',
+                    borderWidth: 1,
+                    barPercentage: 1.0,
+                    categoryPercentage: 1.0
+                });
+            }
+            
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: textColor }
+                        },
+                        tooltip: {
+                            backgroundColor: isDark ? '#2a2a2a' : '#fff',
+                            titleColor: textColor,
+                            bodyColor: textColor,
+                            borderColor: isDark ? '#555' : '#ddd',
+                            borderWidth: 1
+                        },
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                    modifierKey: null,
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                drag: {
+                                    enabled: true,
+                                    modifierKey: 'shift',
+                                    backgroundColor: 'rgba(136, 176, 255, 0.25)',
+                                    borderColor: 'rgba(136, 176, 255, 0.8)',
+                                    borderWidth: 1
+                                },
+                                mode: 'x',
+                            }
+                        },
+                        annotation: windowStart >= 0 && windowEnd >= 0 ? {
+                            annotations: {
+                                windowBox: {
+                                    type: 'box',
+                                    xMin: windowStart,
+                                    xMax: windowEnd,
+                                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                    borderColor: 'rgba(76, 175, 80, 0.6)',
+                                    borderWidth: 2,
+                                    label: {
+                                        display: true,
+                                        content: 'Selected Window',
+                                        position: 'start',
+                                        color: textColor,
+                                        font: { size: 11 }
+                                    }
+                                }
+                            }
+                        } : {}
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: textColor,
+                                maxTicksLimit: 20,
+                                maxRotation: 45,
+                                minRotation: 45
+                            },
+                            grid: { color: gridColor }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: textColor },
+                            grid: { color: gridColor },
+                            title: {
+                                display: true,
+                                text: 'Power (kW)',
+                                color: textColor
+                            }
+                        }
+                    },
+                    // Update Y-axis to fit visible data when zooming/panning X-axis
+                    onZoom: function() {
+                        updateYAxisRange(chart);
+                    },
+                    onPan: function() {
+                        updateYAxisRange(chart);
+                    }
+                }
+            });
+            
+            // Function to update Y-axis based on visible data
+            function updateYAxisRange(chartInstance) {
+                const xScale = chartInstance.scales.x;
+                const minIndex = Math.max(0, Math.floor(xScale.min));
+                const maxIndex = Math.min(labels.length - 1, Math.ceil(xScale.max));
+                
+                let maxVal = 0;
+                for (let i = minIndex; i <= maxIndex; i++) {
+                    if (actualPower[i] !== null && actualPower[i] > maxVal) maxVal = actualPower[i];
+                    if (expectedPower[i] !== null && expectedPower[i] !== undefined && expectedPower[i] > maxVal) maxVal = expectedPower[i];
+                }
+                
+                // Add 10% padding
+                chartInstance.options.scales.y.max = maxVal * 1.1;
+                chartInstance.update('none');
+            }
+            
+            window.activeCharts = [chart];
+        }
+
+        function resetChartZoom() {
+            if (window.activeCharts && window.activeCharts.length > 0) {
+                window.activeCharts.forEach(chart => chart.resetZoom());
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            attachSettingsListeners();
+            initPyodide();
+        });
+    </script>
+</body>
+</html>
