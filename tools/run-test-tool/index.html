@@ -267,6 +267,80 @@
         .wtg-chart-btn.active { background: var(--accent-color); color: #000; font-weight: 600; }
         .wtg-chart-btn.reset-zoom-btn { background: rgba(253, 126, 20, 0.2); margin-left: auto; }
         .wtg-chart-btn.reset-zoom-btn:hover { background: rgba(253, 126, 20, 0.4); }
+
+        /* Toggle switch styles */
+        .toggle-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .toggle-group { display: flex; align-items: center; gap: 0.5rem; background: #2a2a2a; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); }
+        body.light-mode .toggle-group { background: #f8f9fa; }
+        .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; border-radius: 24px; transition: 0.3s; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch input:checked + .toggle-slider { background-color: var(--success-color); }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
+        .toggle-label { font-size: 0.85rem; color: var(--text-color); white-space: nowrap; }
+        .toggle-input { width: 80px; padding: 6px 8px; background: #1a1a1a; border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color); font-size: 0.85rem; }
+        body.light-mode .toggle-input { background: white; }
+        .toggle-input:disabled { opacity: 0.5; cursor: not-allowed; }
+        .toggle-unit { font-size: 0.8rem; color: #888; }
+
+        /* Window Explorer Styles */
+        .window-explorer-card { display: none; }
+        .window-explorer-card.visible { display: block; }
+        .wtg-selector { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); }
+        .wtg-selector-btn { padding: 0.5rem 1rem; background: rgba(136, 176, 255, 0.15); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color); cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+        .wtg-selector-btn:hover { background: rgba(136, 176, 255, 0.25); }
+        .wtg-selector-btn.active { background: var(--accent-color); color: #000; font-weight: 600; border-color: var(--accent-color); }
+        .candidate-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .candidate-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; cursor: pointer; transition: all 0.2s; }
+        body.light-mode .candidate-card { background: rgba(0,0,0,0.02); }
+        .candidate-card:hover { border-color: var(--accent-color); background: rgba(136, 176, 255, 0.1); }
+        .candidate-card.selected { border-color: var(--success-color); border-width: 2px; background: rgba(90, 144, 104, 0.1); }
+        .candidate-card.not-viable { opacity: 0.7; border-color: var(--error-color); border-style: dashed; }
+        .candidate-card.not-viable:hover { background: rgba(220, 53, 69, 0.1); border-color: var(--error-color); }
+        .candidate-issues { margin-top: 0.5rem; padding: 0.5rem; background: rgba(220, 53, 69, 0.15); border-radius: 4px; font-size: 0.8rem; color: var(--error-color); }
+        .candidate-issues ul { margin: 0; padding-left: 1.25rem; }
+        .candidate-issues li { margin-bottom: 0.25rem; }
+        .viable-badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; }
+        .viable-badge.pass { background: rgba(90, 144, 104, 0.3); color: var(--success-color); }
+        .viable-badge.fail { background: rgba(220, 53, 69, 0.3); color: var(--error-color); }
+        .candidate-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+        .candidate-rank { font-weight: 700; font-size: 1.1rem; color: var(--accent-color); }
+        .candidate-alarms { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .candidate-alarms.zero { background: rgba(90, 144, 104, 0.3); color: var(--success-color); }
+        .candidate-alarms.has-alarms { background: rgba(220, 53, 69, 0.3); color: var(--error-color); }
+        .candidate-alarms.has-warnings { background: rgba(245, 158, 11, 0.3); color: var(--warning-color); }
+        .candidate-events { display: flex; gap: 0.5rem; align-items: center; }
+        .event-badge { padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .event-badge.alarm { background: rgba(220, 53, 69, 0.3); color: var(--error-color); }
+        .event-badge.warning { background: rgba(245, 158, 11, 0.3); color: var(--warning-color); }
+        .event-badge.zero { background: rgba(90, 144, 104, 0.3); color: var(--success-color); }
+        .alarm-details-list .event-type { font-weight: 600; margin-right: 0.5rem; }
+        .alarm-details-list .event-type.alarm { color: var(--error-color); }
+        .alarm-details-list .event-type.warning { color: var(--warning-color); }
+        .candidate-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; font-size: 0.85rem; }
+        .candidate-stat { display: flex; flex-direction: column; }
+        .candidate-stat-label { color: #888; font-size: 0.75rem; }
+        .candidate-stat-value { font-weight: 600; font-family: monospace; }
+        .candidate-details-btn { margin-top: 0.75rem; padding: 0.5rem 1rem; background: rgba(136, 176, 255, 0.2); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color); cursor: pointer; font-size: 0.8rem; width: 100%; }
+        .candidate-details-btn:hover { background: rgba(136, 176, 255, 0.3); }
+        .no-candidates { color: #888; font-style: italic; padding: 2rem; text-align: center; }
+
+        /* Tied Windows Selection Modal */
+        .tied-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 4000; padding: 2rem; }
+        .tied-modal.visible { display: flex; }
+        .tied-modal-content { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; max-width: 800px; max-height: 90vh; width: 100%; overflow: hidden; display: flex; flex-direction: column; }
+        .tied-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); }
+        .tied-modal-title { font-size: 1.1rem; font-weight: 600; }
+        .tied-modal-close { background: none; border: none; color: var(--text-color); font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
+        .tied-modal-close:hover { opacity: 1; }
+        .tied-modal-body { overflow-y: auto; padding: 1rem; flex: 1; }
+        .tied-modal-info { padding: 0.75rem 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem; }
+        .tied-modal-info i { color: var(--warning-color); margin-right: 0.5rem; }
+        .tied-modal-footer { padding: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 0.75rem; }
+        .tied-modal-footer .btn { padding: 0.75rem 1.5rem; }
+        .alarm-details-list { margin-top: 0.5rem; padding-left: 1rem; font-size: 0.8rem; color: #888; max-height: 100px; overflow-y: auto; }
+        .alarm-details-list li { margin-bottom: 0.25rem; font-family: monospace; }
     </style>
 </head>
 <body>
@@ -381,60 +455,58 @@
             <div class="card-icon"><i class="fa-solid fa-sliders"></i></div>
             <span class="card-title">Test Parameters</span>
         </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label>Mode</label>
-                <select id="mode">
-                    <option value="m01">M01 (72h active)</option>
-                    <option value="reliability">Reliability (informational)</option>
-                </select>
+        <div class="toggle-row">
+            <div class="toggle-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="require-availability" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Require Availability</span>
+                <input type="number" id="min-availability" class="toggle-input" value="96" min="0" max="100" step="0.1">
+                <span class="toggle-unit">%</span>
             </div>
-            <div class="form-group">
-                <label>Rated Power (kW)</label>
-                <input type="number" id="rated-power" value="4500" min="100" step="100">
+            <div class="toggle-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="require-nominal" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Require 24h Nominal Power</span>
+            </div>
+            <div class="toggle-group">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="require-energy" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Require Min Energy</span>
+                <input type="number" id="energy-threshold" class="toggle-input" value="54" min="0" step="1">
+                <span class="toggle-unit">MWh</span>
             </div>
         </div>
         <div class="form-row">
             <div class="form-group">
+                <label>Rated Power (kW)</label>
+                <input type="number" id="rated-power" value="4500" min="100" step="100">
+            </div>
+            <div class="form-group">
                 <label>Test Hours</label>
                 <input type="number" id="test-hours" value="72" min="1">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Nominal Threshold %</label>
+                <input type="number" id="nominal-threshold" value="99" min="0" max="100" step="1">
             </div>
             <div class="form-group">
                 <label>Extension Hours</label>
                 <input type="number" id="extension-hours" value="24" min="0">
             </div>
-        </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label>Min Availability %</label>
-                <input type="number" id="min-availability" value="96" min="0" max="100" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Nominal Threshold %</label>
-                <input type="number" id="nominal-threshold" value="99" min="0" max="100" step="1">
-            </div>
-        </div>
-        <div class="form-row">
             <div class="form-group">
                 <label>Energy Source</label>
                 <select id="energy-source">
                     <option value="power">Power Average</option>
                     <option value="total_active">Total Active Power</option>
                 </select>
-            </div>
-        </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label>Air Density When Missing</label>
-                <select id="air-density-behavior">
-                    <option value="default" selected>Use default automatically</option>
-                    <option value="prompt">Ask to supply column or default</option>
-                    <option value="fail">Fail if missing</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Default Air Density (kg/m³)</label>
-                <input type="number" id="air-density-default" value="1.225" min="0" step="0.001">
             </div>
         </div>
 
@@ -543,6 +615,43 @@
             <button class="btn btn-clear-results" id="clear-results-btn" style="display: none;">
                 <i class="fa-solid fa-trash"></i> Clear Results
             </button>
+        </div>
+    </div>
+
+    <!-- Window Explorer Card -->
+    <div class="card window-explorer-card" id="window-explorer-card">
+        <div class="card-header">
+            <div class="card-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+            <span class="card-title">Window Explorer</span>
+        </div>
+        <div class="wtg-selector" id="wtg-selector">
+            <!-- WTG buttons will be dynamically added here -->
+        </div>
+        <div class="candidate-list" id="candidate-list">
+            <div class="no-candidates">Select a WTG above to view candidate windows</div>
+        </div>
+    </div>
+
+    <!-- Tied Windows Selection Modal -->
+    <div class="tied-modal" id="tied-modal">
+        <div class="tied-modal-content">
+            <div class="tied-modal-header">
+                <span class="tied-modal-title"><i class="fa-solid fa-code-branch"></i> Multiple Windows Available</span>
+                <button class="tied-modal-close" onclick="closeTiedModal()">&times;</button>
+            </div>
+            <div class="tied-modal-body">
+                <div class="tied-modal-info">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span id="tied-modal-info-text">Multiple windows have the same alarm count. Please select which window to use.</span>
+                </div>
+                <div class="candidate-list" id="tied-candidate-list">
+                    <!-- Tied candidates will be populated here -->
+                </div>
+            </div>
+            <div class="tied-modal-footer">
+                <button class="btn btn-view-report" onclick="closeTiedModal()">Cancel</button>
+                <button class="btn btn-download" id="tied-confirm-btn" onclick="confirmTiedSelection()">Use Selected Window</button>
+            </div>
         </div>
     </div>
 
@@ -766,8 +875,6 @@
         const viewChartsBtn = document.getElementById('view-charts-btn');
         const clearResultsBtn = document.getElementById('clear-results-btn');
         const loadingOverlay = document.getElementById('pyodide-loading');
-        const airDensityBehaviorEl = document.getElementById('air-density-behavior');
-        const airDensityDefaultEl = document.getElementById('air-density-default');
 
         function log(message, type = '') {
             const line = document.createElement('div');
@@ -788,6 +895,23 @@
 
         function toggleAccordion(id) { document.getElementById(id).classList.toggle('open'); }
 
+        function detectDelimiter(line) {
+            if (line.includes('\t')) {
+                return { delimiter: '\t', label: 'Tab' };
+            }
+            if (line.includes(',')) {
+                return { delimiter: ',', label: 'Comma' };
+            }
+            return { delimiter: 'whitespace', label: 'Whitespace' };
+        }
+
+        function splitLine(line, delimiter) {
+            if (delimiter === 'whitespace') {
+                return line.trim().split(/\s+/);
+            }
+            return line.split(delimiter).map(cell => cell.trim());
+        }
+
         function updateDataStatus(textarea, statusEl, label) {
             const text = textarea.value.trim();
             if (!text) {
@@ -797,8 +921,8 @@
             }
             const lines = text.split('\n').filter(l => l.trim());
             const firstLine = lines[0] || '';
-            const delimiter = firstLine.includes('\t') ? '\t' : ',';
-            const cols = firstLine.split(delimiter).length;
+            const { delimiter } = detectDelimiter(firstLine);
+            const cols = splitLine(firstLine, delimiter).length;
             statusEl.textContent = `${lines.length} rows, ${cols} columns detected`;
             statusEl.classList.add('has-data');
             return { hasData: true, rows: lines.length, cols: cols };
@@ -844,10 +968,10 @@
             const lines = text.split('\n').filter(l => l.trim());
             if (lines.length === 0) return { headers: [], rows: [] };
             const firstLine = lines[0];
-            const delimiter = firstLine.includes('\t') ? '\t' : ',';
-            const headers = firstLine.split(delimiter).map(h => h.trim());
-            const rows = lines.slice(1).map(line => line.split(delimiter).map(cell => cell.trim()));
-            return { headers, rows, delimiter: delimiter === '\t' ? 'Tab' : 'Comma' };
+            const { delimiter, label } = detectDelimiter(firstLine);
+            const headers = splitLine(firstLine, delimiter);
+            const rows = lines.slice(1).map(line => splitLine(line, delimiter));
+            return { headers, rows, delimiter: label };
         }
 
         function showPreview(type) {
@@ -930,7 +1054,24 @@
             loadingOverlay.classList.add('visible');
             log('Loading Pyodide runtime...', 'info');
             try {
-                pyodide = await loadPyodide();
+                pyodide = await loadPyodide({
+                    stdout: (text) => {
+                        // Capture Python print statements and display in console
+                        if (text && text.trim()) {
+                            // Determine log type based on content
+                            let logType = '';
+                            if (text.includes('PASSED')) logType = 'success';
+                            else if (text.includes('FAILED') || text.includes('ERROR')) logType = 'error';
+                            else if (text.includes('FALLBACK') || text.includes('WARNING')) logType = 'warning';
+                            log(text, logType);
+                        }
+                    },
+                    stderr: (text) => {
+                        if (text && text.trim()) {
+                            log(text, 'error');
+                        }
+                    }
+                });
                 log('Pyodide loaded. Installing packages...', 'info');
                 await pyodide.loadPackage(['pandas', 'numpy', 'micropip']);
                 log('Core packages installed: pandas, numpy', 'success');
@@ -1019,13 +1160,19 @@
                 console.log('[RunTest] Both datasets loaded into Pyodide');
                 const minSeverityVal = document.getElementById('alarms-min-severity').value;
                 const nominalThreshold = parseFloat(document.getElementById('nominal-threshold').value);
+                const requireAvailability = document.getElementById('require-availability').checked;
+                const requireNominal = document.getElementById('require-nominal').checked;
+                const requireEnergy = document.getElementById('require-energy').checked;
                 const params = {
-                    mode: document.getElementById('mode').value,
                     rated_power_kw: parseFloat(document.getElementById('rated-power').value),
                     test_hours: parseInt(document.getElementById('test-hours').value),
                     extension_hours: parseInt(document.getElementById('extension-hours').value),
-                    min_availability_pct: parseFloat(document.getElementById('min-availability').value),
+                    require_availability: requireAvailability,
+                    min_availability_pct: requireAvailability ? parseFloat(document.getElementById('min-availability').value) : 0,
+                    require_nominal: requireNominal,
                     nominal_threshold_pct: nominalThreshold,
+                    require_energy: requireEnergy,
+                    energy_threshold_mwh: requireEnergy ? parseFloat(document.getElementById('energy-threshold').value) : null,
                     bin_minutes: document.getElementById('bin-minutes').value || null,
                     energy_source: document.getElementById('energy-source').value,
                     allowed_categories: document.getElementById('allowed-categories').value,
@@ -1041,9 +1188,7 @@
                     air_density_column_hint: 'Ambient Airdensity AirDensityAvg',
                     wind_speed_column_hint: 'Ambient WindSpeed Avg',
                     // PR threshold derived from nominal threshold (e.g., 99% -> 0.99)
-                    pr_threshold: nominalThreshold / 100.0,
-                    air_density_behavior: airDensityBehaviorEl.value,
-                    air_density_default: parseFloat(airDensityDefaultEl.value) || 1.225
+                    pr_threshold: nominalThreshold / 100.0
                 };
                 Object.assign(params, overrides);
                 pyodide.globals.set('params', pyodide.toPy(params));
@@ -1118,6 +1263,208 @@ run_browser_analysis_from_text(input_data_text, input_file_name, params, alarm_t
                 resultsContent.appendChild(stat);
             });
             resultsCard.classList.add('visible');
+            
+            // Show window explorer if we have candidates
+            if (result.wtg_candidates && Object.keys(result.wtg_candidates).length > 0) {
+                setupWindowExplorer(result.wtgs, result.wtg_candidates);
+            }
+            
+            // Show tied windows modal if there are pending selections
+            if (result.pending_selections && result.pending_selections.length > 0) {
+                showTiedWindowsNotice(result.pending_selections);
+            }
+        }
+        
+        // Window Explorer functionality
+        let currentWtgCandidates = {};
+        let selectedTiedCandidate = null;
+        
+        function setupWindowExplorer(wtgs, candidates) {
+            currentWtgCandidates = candidates;
+            const explorerCard = document.getElementById('window-explorer-card');
+            const wtgSelector = document.getElementById('wtg-selector');
+            const candidateList = document.getElementById('candidate-list');
+            
+            // Clear and populate WTG selector
+            wtgSelector.innerHTML = '';
+            wtgs.forEach(wtg => {
+                const btn = document.createElement('button');
+                btn.className = 'wtg-selector-btn';
+                btn.textContent = wtg;
+                btn.onclick = () => selectWtgForExplorer(wtg);
+                wtgSelector.appendChild(btn);
+            });
+            
+            candidateList.innerHTML = '<div class="no-candidates">Select a WTG above to view candidate windows</div>';
+            explorerCard.classList.add('visible');
+        }
+        
+        function selectWtgForExplorer(wtg) {
+            // Update button states
+            document.querySelectorAll('.wtg-selector-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === wtg);
+            });
+            
+            const candidateList = document.getElementById('candidate-list');
+            const candidates = currentWtgCandidates[wtg];
+            
+            if (!candidates || candidates.length === 0) {
+                candidateList.innerHTML = '<div class="no-candidates">No candidate windows found for this WTG</div>';
+                return;
+            }
+            
+            candidateList.innerHTML = '';
+            candidates.forEach((cand, idx) => {
+                const card = createCandidateCard(cand, idx, wtg);
+                candidateList.appendChild(card);
+            });
+        }
+        
+        function createCandidateCard(cand, idx, wtg, showSelectBtn = false) {
+            const card = document.createElement('div');
+            card.className = 'candidate-card';
+            card.dataset.index = idx;
+            
+            // Check if window is viable
+            const isViable = cand.viable !== false;
+            if (!isViable) {
+                card.classList.add('not-viable');
+            }
+            
+            // Build event badges (separate alarms and warnings)
+            const alarmCount = cand.alarm_count || 0;
+            const warningCount = cand.warning_count || 0;
+            const totalEvents = alarmCount + warningCount;
+            
+            let eventBadges = '';
+            if (totalEvents === 0) {
+                eventBadges = '<span class="event-badge zero">0 Events</span>';
+            } else {
+                if (alarmCount > 0) {
+                    eventBadges += `<span class="event-badge alarm">${alarmCount} Alarm${alarmCount > 1 ? 's' : ''}</span>`;
+                }
+                if (warningCount > 0) {
+                    eventBadges += `<span class="event-badge warning">${warningCount} Warning${warningCount > 1 ? 's' : ''}</span>`;
+                }
+            }
+            
+            const viableBadge = isViable 
+                ? '<span class="viable-badge pass">Viable</span>' 
+                : '<span class="viable-badge fail">Not Viable</span>';
+            
+            card.innerHTML = `
+                <div class="candidate-header">
+                    <span class="candidate-rank">#${idx + 1}${viableBadge}</span>
+                    <div class="candidate-events">${eventBadges}</div>
+                </div>
+                <div class="candidate-stats">
+                    <div class="candidate-stat">
+                        <span class="candidate-stat-label">Start</span>
+                        <span class="candidate-stat-value">${cand.start}</span>
+                    </div>
+                    <div class="candidate-stat">
+                        <span class="candidate-stat-label">End</span>
+                        <span class="candidate-stat-value">${cand.end}</span>
+                    </div>
+                    <div class="candidate-stat">
+                        <span class="candidate-stat-label">Active Hours</span>
+                        <span class="candidate-stat-value">${cand.active_hours}h</span>
+                    </div>
+                    <div class="candidate-stat">
+                        <span class="candidate-stat-label">Nominal Hours</span>
+                        <span class="candidate-stat-value">${cand.nominal_hours}h</span>
+                    </div>
+                    <div class="candidate-stat">
+                        <span class="candidate-stat-label">Availability</span>
+                        <span class="candidate-stat-value">${cand.availability_pct}%</span>
+                    </div>
+                    <div class="candidate-stat">
+                        <span class="candidate-stat-label">Energy</span>
+                        <span class="candidate-stat-value">${cand.energy_mwh} MWh</span>
+                    </div>
+                    <div class="candidate-stat">
+                        <span class="candidate-stat-label">Energy Floor</span>
+                        <span class="candidate-stat-value">${cand.energy_floor}</span>
+                    </div>
+                </div>
+                ${!isViable && cand.issues && cand.issues.length > 0 ? `
+                    <div class="candidate-issues">
+                        <ul>${cand.issues.map(issue => `<li>${issue}</li>`).join('')}</ul>
+                    </div>
+                ` : ''}
+                ${cand.alarm_details && cand.alarm_details.length > 0 ? `
+                    <ul class="alarm-details-list">
+                        ${cand.alarm_details.slice(0, 5).map(a => {
+                            const eventType = (a.event_type || 'Event').toLowerCase();
+                            const typeClass = eventType.includes('alarm') ? 'alarm' : (eventType.includes('warning') ? 'warning' : '');
+                            const typeLabel = eventType.includes('alarm') ? 'ALARM' : (eventType.includes('warning') ? 'WARNING' : 'EVENT');
+                            return `<li><span class="event-type ${typeClass}">[${typeLabel}]</span>${a.timestamp} - ${a.description}</li>`;
+                        }).join('')}
+                        ${cand.alarm_details.length > 5 ? `<li>... and ${cand.alarm_details.length - 5} more</li>` : ''}
+                    </ul>
+                ` : ''}
+                ${showSelectBtn ? '<button class="candidate-details-btn" onclick="selectTiedCandidate(this)">Select This Window</button>' : ''}
+            `;
+            
+            if (showSelectBtn) {
+                card.onclick = (e) => {
+                    if (e.target.tagName !== 'BUTTON') {
+                        document.querySelectorAll('#tied-candidate-list .candidate-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        selectedTiedCandidate = cand;
+                    }
+                };
+            }
+            
+            return card;
+        }
+        
+        function showTiedWindowsNotice(pendingSelections) {
+            // Show a notice in the console about tied windows
+            pendingSelections.forEach(sel => {
+                log(`⚠️ ${sel.wtg}: ${sel.tied_count} windows tied with ${sel.alarm_count} alarm(s) - using earliest window by default`, 'warning');
+            });
+        }
+        
+        function showTiedModal(wtg, candidates) {
+            const modal = document.getElementById('tied-modal');
+            const infoText = document.getElementById('tied-modal-info-text');
+            const candidateList = document.getElementById('tied-candidate-list');
+            
+            infoText.textContent = `${wtg}: ${candidates.length} windows have the same alarm count (${candidates[0].alarm_count}). Select which window to use.`;
+            
+            candidateList.innerHTML = '';
+            candidates.forEach((cand, idx) => {
+                const card = createCandidateCard(cand, idx, wtg, true);
+                if (idx === 0) card.classList.add('selected');
+                candidateList.appendChild(card);
+            });
+            
+            selectedTiedCandidate = candidates[0];
+            modal.classList.add('visible');
+        }
+        
+        function closeTiedModal() {
+            document.getElementById('tied-modal').classList.remove('visible');
+            selectedTiedCandidate = null;
+        }
+        
+        function selectTiedCandidate(btn) {
+            const card = btn.closest('.candidate-card');
+            document.querySelectorAll('#tied-candidate-list .candidate-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            const idx = parseInt(card.dataset.index);
+            // Find the candidate by index
+            const candidateList = document.getElementById('tied-candidate-list');
+            const cards = candidateList.querySelectorAll('.candidate-card');
+            // selectedTiedCandidate is set in the card's onclick handler
+        }
+        
+        function confirmTiedSelection() {
+            if (selectedTiedCandidate) {
+                log(`Selected window: ${selectedTiedCandidate.start} to ${selectedTiedCandidate.end}`, 'success');
+                closeTiedModal();
+            }
         }
 
         downloadBtn.addEventListener('click', async () => {
@@ -1586,9 +1933,40 @@ run_browser_analysis_from_text(input_data_text, input_file_name, params, alarm_t
             }
         }
 
+        // Toggle switch functionality
+        function setupToggleSwitches() {
+            // Availability toggle controls only its percentage input
+            const availToggle = document.getElementById('require-availability');
+            const availInput = document.getElementById('min-availability');
+            availToggle.addEventListener('change', function() {
+                availInput.disabled = !this.checked;
+            });
+            availInput.disabled = !availToggle.checked;
+            
+            // Nominal toggle controls Extension Hours and Nominal Threshold
+            const nominalToggle = document.getElementById('require-nominal');
+            const extensionHoursInput = document.getElementById('extension-hours');
+            const nominalThresholdInput = document.getElementById('nominal-threshold');
+            nominalToggle.addEventListener('change', function() {
+                extensionHoursInput.disabled = !this.checked;
+                nominalThresholdInput.disabled = !this.checked;
+            });
+            extensionHoursInput.disabled = !nominalToggle.checked;
+            nominalThresholdInput.disabled = !nominalToggle.checked;
+            
+            // Energy toggle controls its input
+            const energyToggle = document.getElementById('require-energy');
+            const energyInput = document.getElementById('energy-threshold');
+            energyToggle.addEventListener('change', function() {
+                energyInput.disabled = !this.checked;
+            });
+            energyInput.disabled = !energyToggle.checked;
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             loadSettings();
             attachSettingsListeners();
+            setupToggleSwitches();
             initPyodide();
         });
     </script>
