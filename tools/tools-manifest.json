@@ -31,6 +31,18 @@
     ]
   },
   {
+    "id": "pdf-serial-crosscheck",
+    "name": "PDF Serial Cross-Check",
+    "description": "Verify job book serials and VUIs against the ROMC across all construction documents",
+    "icon": "<i class=\"fa-solid fa-barcode\"></i>",
+    "category": "PDF Tools",
+    "technologies": [
+      "PDF.js",
+      "JSZip",
+      "JavaScript"
+    ]
+  },
+  {
     "id": "run-test-tool",
     "name": "Run Test Tool",
     "description": "Find optimal reliability and HOTS test windows from SCADA data. Analyzes WTG availability, power output, and category compliance.",
