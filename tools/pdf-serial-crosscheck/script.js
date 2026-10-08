@@ -10,7 +10,23 @@
 
   // docs: { name, short, numPages, pages:[{text, norm, hasText}], fieldList:[{name,value,page,label,section}],
   //         fields:{name:Set}, text, error }
-  const state = { docs: [], refIdx: -1, refAuto: true, mode: 'jobbook', rowsB: [], jb: null };
+  const state = { docs: [], refIdx: -1, refAuto: true, mode: 'jobbook', rowsB: [], jb: null, jbRows: [], reviews: new Map(), reviewsFor: '' };
+
+  // Reviewer marks ("verified" / "issue") per ROMC row, remembered per reference file.
+  const reviewKey = e => e.label + '\u0000' + e.n;
+  function loadReviews(ref) {
+    if (state.reviewsFor === ref.name) return;
+    state.reviewsFor = ref.name;
+    state.reviews = new Map();
+    try { Object.entries(JSON.parse(localStorage.getItem('snc-reviews:' + ref.name) || '{}')).forEach(([k, v]) => state.reviews.set(k, v)); } catch (e) { /* storage unavailable */ }
+  }
+  function saveReviews() {
+    try { localStorage.setItem('snc-reviews:' + state.reviewsFor, JSON.stringify(Object.fromEntries(state.reviews))); } catch (e) { /* storage unavailable */ }
+  }
+
+  // Link that opens a document page in the viewer, highlighting a value.
+  const openLink = (i, page, hl, text) =>
+    `<a href="#" class="open" data-doc="${i}" data-page="${page}" data-hl="${esc(hl || '')}">${text}</a>`;
 
   // =====================================================================
   // PDF extraction
@@ -62,7 +78,7 @@
   }
 
   async function extract(file, displayName) {
-    const doc = { name: displayName || file.name, numPages: 0, pages: [], fieldList: [], fields: {}, text: '', error: null };
+    const doc = { name: displayName || file.name, blob: file, numPages: 0, pages: [], fieldList: [], fields: {}, text: '', error: null };
     let pdf;
     try {
       const data = new Uint8Array(await file.arrayBuffer());
@@ -392,10 +408,10 @@
     const docName = i => esc(state.docs[i].short);
     switch (e.status) {
       case 'duplicate': return `Same value also entered for: ${e.dupWith.map(esc).join('; ')}`;
-      case 'mismatch': return `${docName(e.near.doc)} p.${e.near.page} has <span class="chip bad">${esc(e.near.value)}</span> — ${e.near.d} character${e.near.d > 1 ? 's' : ''} different`;
+      case 'mismatch': return `${openLink(e.near.doc, e.near.page, e.near.value, `${docName(e.near.doc)} p.${e.near.page}`)} has <span class="chip bad">${esc(e.near.value)}</span> — ${e.near.d} character${e.near.d > 1 ? 's' : ''} different`;
       case 'notfound': return `Not in ${e.expected.map(docName).join(', ')}`;
       case 'visual': {
-        const where = e.scanPages.map(s => `${docName(s.i)} p.${rangeList(s.pages)}`);
+        const where = e.scanPages.map(s => openLink(s.i, s.pages[0], e.value, `${docName(s.i)} p.${rangeList(s.pages)}`));
         return `Not in the text of ${e.expected.map(docName).join(', ')}. ` +
           (where.length ? `Check the scanned page(s): ${where.join('; ')}` : 'Check the photo of the tag');
       }
@@ -416,7 +432,8 @@
     return out.join(', ');
   }
 
-  function renderJobBook() {
+  // keepRows: re-draw the same rows in the same order (used while stepping through in the viewer).
+  function renderJobBook(keepRows) {
     const sum = $('snc-jb-summary'), tbl = $('snc-jb-table'), ex = $('snc-jb-extra');
     const jb = state.jb;
     if (!jb) {
@@ -431,24 +448,33 @@
     sum.innerHTML = `<p>Reference: <strong>${esc(ref.short)}</strong> · ${jb.entries.length} serials/VUIs checked</p><p>` +
       Object.keys(JB).filter(k => counts[k]).map(k => `<span class="st-${JB[k].c}">${counts[k]} ${JB[k].t.toLowerCase()}</span>`).join('') + '</p>';
 
-    const rows = jb.entries
-      .filter(e => !issuesOnly || ['mismatch', 'duplicate', 'notfound', 'visual', 'notloaded'].includes(e.status))
+    loadReviews(ref);
+    const reviewed = Object.values(Object.fromEntries(state.reviews));
+    const nVer = reviewed.filter(v => v === 'verified').length, nIss = reviewed.filter(v => v === 'issue').length;
+    if (nVer || nIss) sum.innerHTML += `<p class="src">Your review: ${nVer} verified · ${nIss} marked as issue</p>`;
+
+    const rows = keepRows ? state.jbRows : jb.entries
+      .filter(e => !issuesOnly || (['mismatch', 'duplicate', 'notfound', 'visual', 'notloaded'].includes(e.status) && state.reviews.get(reviewKey(e)) !== 'verified') || state.reviews.get(reviewKey(e)) === 'issue')
       .sort((a, b) => JB[a.status].o - JB[b.status].o || a.page - b.page);
-    let h = '<thead><tr><th>Status</th><th>ROMC item</th><th>Value</th><th>Found in</th><th>Notes</th></tr></thead><tbody>';
-    if (!rows.length) h += `<tr><td colspan="5" class="none">${issuesOnly ? 'No issues found. Untick “Issues only” to see every serial.' : 'No serial-like values found in the reference document.'}</td></tr>`;
-    for (const e of rows) {
-      const found = e.found.map(f => `<div class="${e.expected.includes(f.i) ? 'exp' : ''}">${esc(state.docs[f.i].short)} <span class="src">p.${f.pages.slice(0, 4).join(', ')}${f.pages.length > 4 ? '…' : ''}</span></div>`).join('') || '<span class="none">—</span>';
-      h += `<tr><td><span class="st st-${JB[e.status].c}">${JB[e.status].t}</span></td>` +
-        `<td>${esc(e.label)}<div class="src">ROMC p.${e.page}</div></td>` +
-        `<td><span class="chip ${JB[e.status].c}">${esc(e.value)}</span></td><td>${found}</td><td class="notes">${jbDetail(e)}</td></tr>`;
-    }
+    state.jbRows = rows;
+    let h = '<thead><tr><th>Status</th><th>ROMC item</th><th>Value</th><th>Found in</th><th>Notes</th><th></th></tr></thead><tbody>';
+    if (!rows.length) h += `<tr><td colspan="6" class="none">${issuesOnly ? 'No open issues. Untick “Issues only” to see every serial.' : 'No serial-like values found in the reference document.'}</td></tr>`;
+    rows.forEach((e, k) => {
+      const found = e.found.map(f => `<div class="${e.expected.includes(f.i) ? 'exp' : ''}">${esc(state.docs[f.i].short)} <span class="src">${f.pages.slice(0, 4).map(pn => openLink(f.i, pn, e.value, 'p.' + pn)).join(', ')}${f.pages.length > 4 ? '…' : ''}</span></div>`).join('') || '<span class="none">—</span>';
+      const mark = state.reviews.get(reviewKey(e));
+      const badge = mark ? `<div><span class="mark mark-${mark}">${mark === 'verified' ? '✓ Verified' : '⚠ Issue'}</span></div>` : '';
+      h += `<tr${mark ? ` class="row-${mark}"` : ''}><td><span class="st st-${JB[e.status].c}">${JB[e.status].t}</span>${badge}</td>` +
+        `<td>${esc(e.label)}<div class="src">${openLink(jb.refIdx, e.page, e.value, 'ROMC p.' + e.page)}</div></td>` +
+        `<td><span class="chip ${JB[e.status].c}">${esc(e.value)}</span></td><td>${found}</td><td class="notes">${jbDetail(e)}</td>` +
+        `<td><button type="button" class="btn btn-small" data-review="${k}">Review</button></td></tr>`;
+    });
     tbl.innerHTML = h + '</tbody>';
 
     if (jb.extra.length) {
       let x = `<details><summary><strong>${jb.extra.length} serial-like value(s) in other documents that aren't in the ROMC</strong> <span class="src">— review for typos or missing ROMC entries (tool and equipment serials will also appear here)</span></summary>` +
         '<div class="tablewrap"><table><thead><tr><th>Document</th><th>Value</th><th>Context</th></tr></thead><tbody>';
       for (const s of jb.extra.sort((a, b) => a.doc - b.doc || a.page - b.page)) {
-        x += `<tr><td>${esc(state.docs[s.doc].short)} <span class="src">p.${s.page}</span></td><td><span class="chip warn">${esc(s.value)}</span></td><td class="src">${esc(s.context.slice(0, 90))}</td></tr>`;
+        x += `<tr><td>${esc(state.docs[s.doc].short)} <span class="src">${openLink(s.doc, s.page, s.value, 'p.' + s.page)}</span></td><td><span class="chip warn">${esc(s.value)}</span></td><td class="src">${esc(s.context.slice(0, 90))}</td></tr>`;
       }
       ex.innerHTML = x + '</tbody></table></div></details>';
     } else ex.innerHTML = '';
@@ -569,7 +595,7 @@
       const scanned = d.pages.filter(p => !p.hasText).length;
       const textInfo = scanned === 0 ? 'text' : scanned === d.numPages ? '<span class="warn-text">scanned – no text</span>' : `<span class="warn-text">${scanned} of ${d.numPages} pages scanned</span>`;
       return `<li><label class="ref" title="Use as reference (master) document"><input type="radio" name="snc-ref" value="${i}" ${i === state.refIdx ? 'checked' : ''}> Reference</label>
-        <span class="docname" title="${esc(d.name)}">${esc(d.short)}</span>
+        <span class="docname" title="${esc(d.name)}">${openLink(i, 1, '', esc(d.short))}</span>
         <span class="meta">${d.numPages} p · ${d.fieldList.length} fields · ${textInfo}</span>
         <details data-i="${i}"><summary class="meta">Text &amp; fields</summary></details>
         <button class="btn btn-small" data-rm="${i}">Remove</button></li>`;
@@ -663,7 +689,52 @@
     det.appendChild(ta);
   }, true);
 
-  $('snc-clear').addEventListener('click', () => { state.docs = []; state.refIdx = -1; state.refAuto = true; renderDocs(); run(); });
+  $('snc-clear').addEventListener('click', () => { viewer.reset(); state.docs = []; state.refIdx = -1; state.refAuto = true; renderDocs(); run(); });
+
+  // ---------- Viewer ----------
+  // Where the evidence for a ROMC row should be: the required document's matching page,
+  // a near-miss, its first scanned page, or anywhere else the value was found.
+  function reviewTarget(e) {
+    const fe = e.found.find(f => e.expected.includes(f.i));
+    if (fe) return { doc: fe.i, page: fe.pages[0], hl: e.value };
+    if (e.near) return { doc: e.near.doc, page: e.near.page, hl: e.near.value };
+    if (e.scanPages && e.scanPages.length) return { doc: e.scanPages[0].i, page: e.scanPages[0].pages[0], hl: e.value };
+    if (e.expected.length) return { doc: e.expected[0], page: 1, hl: e.value };
+    if (e.found.length) return { doc: e.found[0].i, page: e.found[0].pages[0], hl: e.value };
+    return null;
+  }
+  function openReview(k) {
+    const e = state.jbRows[k];
+    if (!e) return;
+    viewer.open({
+      title: `<span class="st st-${JB[e.status].c}">${JB[e.status].t}</span> <strong>${esc(e.label)}</strong> <span class="chip ${JB[e.status].c}">${esc(e.value)}</span>`,
+      left: { doc: state.jb.refIdx, page: e.page, hl: e.value },
+      right: reviewTarget(e),
+      mark: { key: reviewKey(e), status: state.reviews.get(reviewKey(e)) || null },
+      step: { index: k, total: state.jbRows.length },
+    });
+  }
+  const viewer = window.createSncViewer({
+    getDocs: () => state.docs,
+    onMark: (key, status) => {
+      if (status) state.reviews.set(key, status); else state.reviews.delete(key);
+      saveReviews();
+      renderJobBook(true); // same rows while the viewer is open, so "Next item" stays predictable
+    },
+    onClose: () => renderJobBook(),
+    onStep: k => openReview(k),
+  });
+  $('snc').addEventListener('click', e => {
+    const a = e.target.closest('a.open');
+    if (a) {
+      e.preventDefault();
+      const i = +a.dataset.doc;
+      viewer.open({ title: `<strong>${esc(state.docs[i].short)}</strong>`, left: { doc: i, page: +a.dataset.page, hl: a.dataset.hl } });
+      return;
+    }
+    const r = e.target.closest('[data-review]');
+    if (r) openReview(+r.dataset.review);
+  });
   document.querySelectorAll('input[name="snc-mode"]').forEach(r => r.addEventListener('change', e => { state.mode = e.target.value; run(); }));
 
   let timer;
@@ -675,11 +746,11 @@
     const q = s => `"${String(s).replace(/"/g, '""')}"`;
     const lines = [];
     if (state.mode === 'jobbook' && state.jb) {
-      lines.push(['Status', 'ROMC item', 'Value', 'ROMC page', 'Found in', 'Notes'].map(q).join(','));
+      lines.push(['Status', 'ROMC item', 'Value', 'ROMC page', 'Found in', 'Notes', 'Review'].map(q).join(','));
       for (const e of state.jb.entries) {
         lines.push([JB[e.status].t, e.label, e.value, e.page,
           e.found.map(f => `${state.docs[f.i].short} p.${f.pages.join('/')}`).join('; '),
-          jbDetail(e).replace(/<[^>]+>/g, '')].map(q).join(','));
+          jbDetail(e).replace(/<[^>]+>/g, '').replace(/&amp;/g, '&'), state.reviews.get(reviewKey(e)) || ''].map(q).join(','));
       }
       if (state.jb.extra.length) {
         lines.push('', ['Not in ROMC', 'Document', 'Value', 'Page', 'Context'].map(q).join(','));
