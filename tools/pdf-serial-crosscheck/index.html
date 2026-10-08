@@ -132,6 +132,50 @@
         td .exp { font-weight: 600; }
         .extra { margin-top: 18px; }
         .extra summary { cursor: pointer; margin-bottom: 8px; }
+
+        /* Links that open a document page in the viewer */
+        a.open { color: var(--accent); text-decoration: none; }
+        a.open:hover { text-decoration: underline; }
+        .docs .docname a.open { color: var(--heading); }
+        .docs .docname a.open:hover { color: var(--accent); }
+        .mark { display: inline-block; margin-top: 4px; font-size: 11px; font-weight: 700; }
+        .mark-verified { color: var(--ok); }
+        .mark-issue { color: var(--bad); }
+        tr.row-verified td { opacity: 0.7; }
+
+        /* Document viewer overlay */
+        body.snc-viewer-open { overflow: hidden; }
+        .snc-viewer { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.6); display: flex; padding: 12px; }
+        .viewer-box { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--panel); border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); overflow: hidden; }
+        .viewer-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+        .viewer-title { flex: 1 1 320px; min-width: 0; color: var(--heading); }
+        .viewer-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .viewer-step, .viewer-mark { display: inline-flex; gap: 6px; align-items: center; }
+        .viewer-count { color: var(--muted); font-size: 12px; min-width: 56px; text-align: center; }
+        .viewer-mark .btn.active.mark-ok { background-color: #2e7d32; }
+        .viewer-mark .btn.active.mark-bad { background-color: #b02a37; }
+        .viewer-panes { flex: 1; display: flex; min-height: 0; }
+        .viewer-panes .pane { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; flex-direction: column; border-right: 1px solid var(--line); }
+        .viewer-panes .pane:last-child { border-right: none; }
+        .pane-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 10px; background: var(--inset); font-size: 13px; }
+        .pane-bar select { flex: 1 1 180px; min-width: 0; max-width: 100%; padding: 4px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
+        .pane-bar button { min-width: 28px; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; font-size: 14px; }
+        .pane-bar button:hover { border-color: var(--accent); }
+        .pane-nav { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); }
+        .pane-page { width: 52px; padding: 3px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-align: center; }
+        .pane-tab { color: var(--accent); text-decoration: none; white-space: nowrap; }
+        .pane-msg { padding: 4px 10px; font-size: 12px; color: var(--muted); min-height: 1.3em; }
+        .pane-body { flex: 1; overflow: auto; padding: 8px 12px 16px; background: #525659; }
+        .pane-wrap { position: relative; margin: 0 auto; width: max-content; box-shadow: 0 2px 8px rgba(0,0,0,0.4); background: white; }
+        .pane-wrap canvas { display: block; }
+        .pane-hl { position: absolute; inset: 0; pointer-events: none; }
+        .pane-hl .hl { position: absolute; background: rgba(255, 213, 0, 0.35); outline: 2px solid #ff9800; border-radius: 2px; }
+        @media (max-width: 800px) {
+            .snc-viewer { padding: 0; }
+            .viewer-box { border-radius: 0; }
+            .snc-viewer.split .viewer-panes { flex-direction: column; }
+            .viewer-panes .pane { border-right: none; border-bottom: 1px solid var(--line); }
+        }
     </style>
 </head>
 <body>
@@ -240,6 +284,7 @@ Hub serial | hub[^\n]{0,40}?(?:serial\s*(?:no\.?|number|#)|s\/n)\s*[:#.]?\s*((?=
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="viewer.js"></script>
     <script src="script.js"></script>
     <script>
         // Theme toggle (shared bench convention: localStorage 'theme', dark default)
