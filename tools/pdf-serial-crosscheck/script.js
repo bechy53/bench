@@ -74,6 +74,15 @@
       if (above.length) s = joinItems(above.filter(i => Math.abs(i.y - above[0].y) < 3).sort((a, b) => a.x - b.x));
     }
     s = s.replace(/\s+/g, ' ').trim();
+    // In tables like "Lift wire | Ferrule number", the row says which wire and the
+    // column header says what the value is, so add the header.
+    if (s && !/number|serial|vui|batch|type|manufacturer|year|date|version|weight|frequency|\bmk\b|name/i.test(s)) {
+      // Header text is often split into fragments ("Ferrule", "n", "umber"), so rebuild
+      // each line above the field (within its column) before reading it.
+      const col = items.filter(it => it.y > y2 && it.y < y2 + 160 && it.x < x2 && it.x + it.w > x1 - 4);
+      const head = groupLines(col).reverse().map(l => l.text).find(t => /number|serial|vui/i.test(t));
+      if (head) s += ' – ' + head;
+    }
     return s.length > 90 ? s.slice(0, 87) + '…' : s;
   }
 
@@ -325,6 +334,16 @@
         if (seen.has(key)) continue;
         seen.add(key);
         entries.push({ label: f.label, value: v, n: alnum(v), page: f.page, section: f.section });
+      }
+    }
+
+    // 1b. VUI first: where a component has a VUI, check the VUI and leave out its serial
+    //     number. Components with no VUI (e.g. aviation lights) keep the serial.
+    if ($('snc-vuifirst').checked) {
+      const withVui = new Set(entries.filter(e => /\bvuis?\b/i.test(e.label)).map(e => e.section || e.label));
+      for (let k = entries.length - 1; k >= 0; k--) {
+        const e = entries[k];
+        if (/serial/i.test(e.label) && !/\bvui/i.test(e.label) && withVui.has(e.section || e.label)) entries.splice(k, 1);
       }
     }
 
@@ -695,12 +714,14 @@
   // Where the evidence for a ROMC row should be: the required document's matching page,
   // a near-miss, its first scanned page, or anywhere else the value was found.
   function reviewTarget(e) {
+    // sure: false = the page is a guess, so the viewer keeps the reviewer's place
+    // if that document is already open.
     const fe = e.found.find(f => e.expected.includes(f.i));
-    if (fe) return { doc: fe.i, page: fe.pages[0], hl: e.value };
-    if (e.near) return { doc: e.near.doc, page: e.near.page, hl: e.near.value };
-    if (e.scanPages && e.scanPages.length) return { doc: e.scanPages[0].i, page: e.scanPages[0].pages[0], hl: e.value };
-    if (e.expected.length) return { doc: e.expected[0], page: 1, hl: e.value };
-    if (e.found.length) return { doc: e.found[0].i, page: e.found[0].pages[0], hl: e.value };
+    if (fe) return { doc: fe.i, page: fe.pages[0], hl: e.value, sure: true };
+    if (e.near) return { doc: e.near.doc, page: e.near.page, hl: e.near.value, sure: true };
+    if (e.scanPages && e.scanPages.length) return { doc: e.scanPages[0].i, page: e.scanPages[0].pages[0], hl: e.value, sure: false };
+    if (e.expected.length) return { doc: e.expected[0], page: 1, hl: e.value, sure: false };
+    if (e.found.length) return { doc: e.found[0].i, page: e.found[0].pages[0], hl: e.value, sure: true };
     return null;
   }
   function openReview(k) {
@@ -708,7 +729,7 @@
     if (!e) return;
     viewer.open({
       title: `<span class="st st-${JB[e.status].c}">${JB[e.status].t}</span> <strong>${esc(e.label)}</strong> <span class="chip ${JB[e.status].c}">${esc(e.value)}</span>`,
-      left: { doc: state.jb.refIdx, page: e.page, hl: e.value },
+      left: { doc: state.jb.refIdx, page: e.page, hl: e.value, sure: true },
       right: reviewTarget(e),
       mark: { key: reviewKey(e), status: state.reviews.get(reviewKey(e)) || null },
       step: { index: k, total: state.jbRows.length },
@@ -739,7 +760,7 @@
 
   let timer;
   ['snc-usefields', 'snc-usetext', 'snc-mintwo', 'snc-ignorecase', 'snc-ignoresep', 'snc-fieldfilter',
-   'snc-aliases', 'snc-rules', 'snc-jbrules', 'snc-skip', 'snc-issuesonly'].forEach(id =>
+   'snc-aliases', 'snc-rules', 'snc-jbrules', 'snc-skip', 'snc-issuesonly', 'snc-vuifirst'].forEach(id =>
     $(id).addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 250); }));
 
   $('snc-csv').addEventListener('click', () => {
