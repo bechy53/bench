@@ -165,9 +165,12 @@
         .pane-page { width: 52px; padding: 3px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); text-align: center; }
         .pane-tab { color: var(--accent); text-decoration: none; white-space: nowrap; }
         .pane-msg { padding: 4px 10px; font-size: 12px; color: var(--muted); min-height: 1.3em; }
-        .pane-body { flex: 1; overflow: auto; padding: 8px 12px 16px; background: #525659; }
-        .pane-wrap { position: relative; margin: 0 auto; width: max-content; box-shadow: 0 2px 8px rgba(0,0,0,0.4); background: white; }
-        .pane-wrap canvas { display: block; }
+        .pane-body { position: relative; flex: 1; overflow: auto; padding: 8px 12px 16px; background: #525659; }
+        .pane-pages { display: flex; flex-direction: column; align-items: center; gap: 12px; width: max-content; min-width: 100%; }
+        .pane-page-box { position: relative; flex: none; box-shadow: 0 2px 8px rgba(0,0,0,0.4); background: white; }
+        .pane-page-box canvas { display: block; position: absolute; inset: 0; z-index: 1; }
+        .pane-page-box .page-num { position: absolute; top: 45%; left: 0; right: 0; text-align: center; color: #bbb; font-size: 28px; z-index: 0; }
+        .pane-page-box .pane-hl { z-index: 2; }
         .pane-hl { position: absolute; inset: 0; pointer-events: none; }
         .pane-hl .hl { position: absolute; background: rgba(255, 213, 0, 0.35); outline: 2px solid #ff9800; border-radius: 2px; }
         @media (max-width: 800px) {
@@ -217,11 +220,11 @@
                 <legend>Required cross-checks</legend>
                 <label>One rule per line: <code>ROMC item regex | file name regex [| photo]</code>
                     <textarea id="snc-jbrules" style="min-height:150px"># From the Job Book Inspection Guide. Add "| photo" when the evidence is a picture.
-^4\.6\b.*(serial|vui) | rescue.?kit | photo
-^9\.2\b.*serial | high.?voltage.?cable|hv.?cable | photo
-^10\b.*(serial|wire) | service.?lift | photo
+^4\.6\b.*(vui|serial) | rescue.?kit | photo
+^9\.2\b.*(vui|serial) | high.?voltage.?cable|hv.?cable | photo
+^10\b.*(vui|serial|ferrule) | service.?lift | photo
 ^11\.\d+\b.*(vui|batch) | bolt.?cert|flange
-^13\.[23]\b.*serial | aviation|faa|obstruction</textarea>
+^13\.[23]\b.*(vui|serial) | aviation|faa|obstruction</textarea>
                 </label>
                 <div class="hint">A ROMC value matching the left side must appear in a loaded document whose file name matches the right side. Item labels are shown in the results table.</div>
                 <div class="err" id="snc-jberr"></div>
@@ -232,6 +235,7 @@
                     <input type="text" id="snc-skip" value="item number|\btype\b|manufacturer|weight|date|year|initials|site name|wind farm|frequency|\bmk\b|version|comment|project|country|^wtg\b|^pad\b">
                 </label>
                 <div class="hint">Values must contain a digit and at least 5 letters/digits; dates, years, weights and N/A are ignored. Matching ignores spaces and punctuation. Values separated by commas or &amp; (e.g. bolt batches) are checked separately.</div>
+                <label><input type="checkbox" id="snc-vuifirst" checked> Check the VUI, not the serial number (serial is used only when a component has no VUI)</label>
                 <label><input type="checkbox" id="snc-issuesonly"> Issues only</label>
             </fieldset>
         </div>
