@@ -33,11 +33,12 @@
   {
     "id": "pdf-serial-crosscheck",
     "name": "PDF Serial Cross-Check",
-    "description": "Verify serial numbers match across multiple construction documents (form fields and page text)",
+    "description": "Verify job book serials and VUIs against the ROMC across all construction documents",
     "icon": "<i class=\"fa-solid fa-barcode\"></i>",
     "category": "PDF Tools",
     "technologies": [
       "PDF.js",
+      "JSZip",
       "JavaScript"
     ]
   },
