@@ -1,0 +1,22 @@
+trigger:
+  - main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - checkout: self
+    displayName: Check out Bench source
+
+  - script: |
+      set -e
+      test -f home.html
+      test -d tools
+      echo "Bench site structure looks valid."
+    displayName: Validate static site
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: '$(Build.SourcesDirectory)'
+      artifact: 'bench-site'
+    displayName: Package Bench site
